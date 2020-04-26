@@ -75,19 +75,12 @@
       )
    
     if(USE_GPU)
-	set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --compiler-options -fPIC --keep-device-functions -gencode arch=compute_70,code=compute_70")
+	set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -arch sm_60 --compiler-options -fPIC --keep-device-functions")
 	set_source_files_properties( ${KRONSRC} PROPERTIES LANGUAGE CUDA )
     endif()
 
-    add_library(kron STATIC ${KRONSRC})
+    add_library(kron SHARED ${KRONSRC})
     target_compile_features(kron PUBLIC cxx_std_11)
-    
-    if (USE_GPU)
-        set_target_properties( kron
-		PROPERTIES CUDA_SEPARABLE_COMPILATION ON 
-			   POSITION_INDEPENDENT_CODE  ON
-			   CUDA_RESOLVE_DEVICE_SYMBOLS ON)
-    endif ()
    
     set(TESTSRC 
 	test_kronmult6_batched.cpp 
@@ -107,41 +100,9 @@
     add_executable(test_kronmult6_batched test_kronmult6_batched.cpp)
     add_executable(test_kronmult6_pbatched test_kronmult6_pbatched.cpp) 
     add_executable(test_kronmult6_xbatched test_kronmult6_xbatched.cpp)
-
-    if (USE_GPU)
-        set_property(TARGET kgemm_nn_test 
-                     PROPERTY CUDA_SEPARABLE_COMPILATION ON)
-        set_property(TARGET kgemm_nt_test 
-                     PROPERTY CUDA_SEPARABLE_COMPILATION ON)
-        set_property(TARGET test_kronmult6_batched
-                     PROPERTY CUDA_SEPARABLE_COMPILATION ON)
-        set_property(TARGET test_kronmult6_pbatched
-                     PROPERTY CUDA_SEPARABLE_COMPILATION ON)
-        set_property(TARGET test_kronmult6_xbatched
-                     PROPERTY CUDA_SEPARABLE_COMPILATION ON)
-     
-    endif()
     
     target_link_libraries(kgemm_nn_test PRIVATE kron) 
     target_link_libraries(kgemm_nt_test PRIVATE kron)
     target_link_libraries(test_kronmult6_batched PRIVATE kron)
     target_link_libraries(test_kronmult6_pbatched PRIVATE kron) 
     target_link_libraries(test_kronmult6_xbatched PRIVATE kron)
-
-    if(APPLE AND USE_GPU)
-      set_property(TARGET kgemm_nn_test
-                   PROPERTY
-                   BUILD_RPATH ${CMAKE_CUDA_IMPLICIT_LINK_DIRECTORIES})
-      set_property(TARGET kgemm_nt_test
-                   PROPERTY
-                   BUILD_RPATH ${CMAKE_CUDA_IMPLICIT_LINK_DIRECTORIES})
-      set_property(TARGET test_kronmult6_batched
-                   PROPERTY
-                   BUILD_RPATH ${CMAKE_CUDA_IMPLICIT_LINK_DIRECTORIES})
-      set_property(TARGET test_kronmult6_pbatched
-                   PROPERTY
-                   BUILD_RPATH ${CMAKE_CUDA_IMPLICIT_LINK_DIRECTORIES})
-      set_property(TARGET test_kronmult6_xbatched
-                   PROPERTY
-                   BUILD_RPATH ${CMAKE_CUDA_IMPLICIT_LINK_DIRECTORIES})
-    endif()
