@@ -75,21 +75,19 @@
       )
    
     if(USE_GPU)
-	set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -arch sm_60 --ptxas-options=-O3")
+	set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --compiler-options -fPIC --keep-device-functions -gencode arch=compute_70,code=compute_70")
 	set_source_files_properties( ${KRONSRC} PROPERTIES LANGUAGE CUDA )
-	add_library(kron STATIC ${KRONSRC})
-        add_definitions(-DUSE_GPU)
-    else ()
-        add_library(kron STATIC ${KRONSRC})
     endif()
 
+    add_library(kron STATIC ${KRONSRC})
     target_compile_features(kron PUBLIC cxx_std_11)
     
     if (USE_GPU)
         set_target_properties( kron
-                               PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+		PROPERTIES CUDA_SEPARABLE_COMPILATION ON 
+			   POSITION_INDEPENDENT_CODE  ON
+			   CUDA_RESOLVE_DEVICE_SYMBOLS ON)
     endif ()
-
    
     set(TESTSRC 
 	test_kronmult6_batched.cpp 
@@ -100,7 +98,7 @@
       )
 
     if(USE_GPU)
-        set_source_files_properties( ${TESTSRC} PROPERTIES LANGUAGE CUDA )
+	    set_source_files_properties( ${TESTSRC} PROPERTIES LANGUAGE CUDA )
     endif ()
 
 
