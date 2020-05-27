@@ -1,5 +1,5 @@
-#ifndef KRONMULT6_PBATCHED_HPP
-#define KRONMULT6_PBATCHED_HPP 1
+#ifndef KRONMULT6_XBATCHED_HPP
+#define KRONMULT6_XBATCHED_HPP 1
 
 #include "kroncommon.hpp"
 
@@ -51,7 +51,7 @@ void kronmult6_xbatched(
 
         auto Aarray = [&] (int const i1,
                            int const i2
-                           ) -> T const * {
+                           ) -> T const * const  {
                 return( Aarray_[ indx2f(i1,i2,ndim ) ] );
         };
 
