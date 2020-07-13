@@ -86,33 +86,24 @@ DEVICE_FUNCTION void kgemm_nt(int const mm, int const nn, int const kk,
     return (C_[indx2f(ic, jc, ldC)]);
   };
 
-  for (int jstart = 1; jstart <= nn; jstart += nb_n) {
-    int const jend = min(nn, jstart + nb_n - 1);
-    int const jsize = jend - jstart + 1;
-
-    for (int istart = 1; istart <= mm; istart += nb_m) {
-      int const iend = min(mm, istart + nb_m - 1);
-      int const isize = iend - istart + 1;
-
       // ---------------------------
       // perform matrix calculations
       // ---------------------------
       // for(int j=iy_start; j <= jsize; j += iy_size)
       // for(int i=ix_start; i <= isize; i += ix_size) {
 
-      for (int ij0 = ij_start - 1; ij0 < (isize * jsize); ij0 += ij_size) {
-        int const i = (ij0 % isize) + 1;
-        int const j = (ij0 - (i - 1)) / isize + 1;
+      for (int ij0 = ij_start - 1; ij0 < (mm * nn); ij0 += ij_size) {
+        int const i = (ij0 % mm) + 1;
+        int const j = (ij0 - (i - 1)) / mm + 1;
         T cij = 0;
         bool constexpr use_pointer = true;
         if (use_pointer) {
           int k = 1;
-          int ia = (istart - 1) + i;
-          int ib = (jstart - 1) + j;
-          T const *Ap = &(A(ia, k));
-          int64_t const inc_A = &(A(ia, k + 1)) - Ap;
-          T const *Bp = &(B(ib, k));
-          int64_t const inc_B = &(B(ib, k + 1)) - Bp;
+
+          T const *Ap = &(A(i, k));
+          int64_t const inc_A = &(A(i, k + 1)) - Ap;
+          T const *Bp = &(B(j, k));
+          int64_t const inc_B = &(B(j, k + 1)) - Bp;
           for (k = 0; k < kk; k++) {
             cij += (*Ap) * (*Bp);
             Ap += inc_A;
@@ -120,25 +111,21 @@ DEVICE_FUNCTION void kgemm_nt(int const mm, int const nn, int const kk,
           };
         } else {
           for (int k = 1; k <= kk; k++) {
-            cij += A((istart - 1) + i, k) * B((jstart - 1) + j, k);
+            cij += A(i, k) * B(j, k);
           };
         };
         // ------------------
         // store results to C
         // ------------------
-        int const ic = (istart - 1) + i;
-        int const jc = (jstart - 1) + j;
+
         if (beta == 1) {
-          atomicAdd(&(C(ic, jc)), alpha * cij);
+          atomicAdd(&(C(i, j)), alpha * cij);
         } else if (beta == 0) {
-          C(ic, jc) = alpha * cij;
+          C(i, j) = alpha * cij;
         } else {
-          C(ic, jc) = beta * C(ic, jc) + alpha * cij;
+          C(i, j) = beta * C(i, j) + alpha * cij;
         };
       };
-
-    }; // end istart
-  };   // end jstart
 }
 
 #endif
