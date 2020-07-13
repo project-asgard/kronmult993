@@ -97,6 +97,9 @@ void kronmult5( int const n,
     // --------------------------------
     // note now X_ is used as workspace
     // --------------------------------
+
+    SYNCTHREADS;
+    
     {
     kronmult4( n, next_nvec, 
                A2_, A3_, A4_, A5_, 

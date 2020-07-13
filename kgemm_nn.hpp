@@ -94,8 +94,6 @@ DEVICE_FUNCTION void kgemm_nn(int const mm, int const nn, int const kk,
       int const jend = min(nn, jstart + nb_n - 1);
       int const jsize = jend - jstart + 1;
 
-      SYNCTHREADS;
-
       // ---------------------------
       // perform matrix calculations
       // ---------------------------

@@ -15,6 +15,7 @@ DEVICE_FUNCTION void kgemm_nt(int const mm, int const nn, int const kk,
   auto min = [](int const x, int const y) { return ((x < y) ? x : y); };
 
   int constexpr nb = 32;
+
 #ifdef USE_GPU
 
   auto max = [](int const x, int const y) { return ((x > y) ? x : y); };
@@ -92,8 +93,6 @@ DEVICE_FUNCTION void kgemm_nt(int const mm, int const nn, int const kk,
     for (int istart = 1; istart <= mm; istart += nb_m) {
       int const iend = min(mm, istart + nb_m - 1);
       int const isize = iend - istart + 1;
-
-      SYNCTHREADS;
 
       // ---------------------------
       // perform matrix calculations
