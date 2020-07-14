@@ -70,10 +70,6 @@ DEVICE_FUNCTION void kgemm_nt(int const mm, int const nn, int const kk,
   //
   //  ------------------------------------
 
-  int const nb_n = min(nn, nb);
-  // FIXME unused in this version int const nb_k = min( kk, nb);
-  int const nb_m = min(mm, nb);
-
   auto A = [&](int const ia, int const ja) -> T const & {
     return (A_[indx2f(ia, ja, ldA)]);
   };
@@ -89,8 +85,6 @@ DEVICE_FUNCTION void kgemm_nt(int const mm, int const nn, int const kk,
       // ---------------------------
       // perform matrix calculations
       // ---------------------------
-      // for(int j=iy_start; j <= jsize; j += iy_size)
-      // for(int i=ix_start; i <= isize; i += ix_size) {
 
       for (int ij0 = ij_start - 1; ij0 < (mm * nn); ij0 += ij_size) {
         int const i = (ij0 % mm) + 1;

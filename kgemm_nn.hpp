@@ -69,10 +69,6 @@ DEVICE_FUNCTION void kgemm_nn(int const mm, int const nn, int const kk,
   //
   //  ------------------------------------
 
-  int const nb_n = min(nn, nb);
-  // FIXME unused // int const nb_k = min( kk, nb);
-  int const nb_m = min(mm, nb);
-
   auto A = [&](int const ia, int const ja) -> T const & {
     return (A_[indx2f(ia, ja, ldA)]);
   };
