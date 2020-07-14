@@ -26,8 +26,7 @@ DEVICE_FUNCTION void kgemm_nt(int const mm, int const nn, int const kk,
   // reorganize threads as nx_threads by ny_threads
   // -----------------------------------------
 
-
-  int const ij_start = threadIdx.x + 1;
+  int const ij_start = threadIdx.x;
   int const ij_size = blockDim.x;
 
 #else
