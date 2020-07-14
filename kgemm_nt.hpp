@@ -32,19 +32,9 @@ DEVICE_FUNCTION void kgemm_nt(int const mm, int const nn, int const kk,
 
 #else
 
-  int const ix_start = 1;
-  int const ix_size = 1;
-  int const iy_start = 1;
-  int const iy_size = 1;
-
   int const ij_start = 1;
   int const ij_size = 1;
 #endif
-
-  assert(ix_start >= 1);
-  assert(iy_start >= 1);
-  assert(ix_size >= 1);
-  assert(iy_size >= 1);
 
   //  ------------------------------------
   //  commonly  mm is large, but kk, nn are small
