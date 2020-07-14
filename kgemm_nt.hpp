@@ -15,14 +15,9 @@ DEVICE_FUNCTION void kgemm_nt(int const mm, int const nn, int const kk,
 
 #ifdef USE_GPU
 
-  auto max = [](int const x, int const y) { return ((x > y) ? x : y); };
-
   // ---------------------------
   // use matlab 1 based indexing
   // ---------------------------
-
-  int constexpr warpsize = 32;
-  int const nthreads = blockDim.x;
 
   assert(blockDim.y == 1);
   assert(blockDim.z == 1);
@@ -30,18 +25,10 @@ DEVICE_FUNCTION void kgemm_nt(int const mm, int const nn, int const kk,
   // -----------------------------------------
   // reorganize threads as nx_threads by ny_threads
   // -----------------------------------------
-  int const nx_threads = warpsize;
-  int const ny_threads = max(1, nthreads / nx_threads);
-  assert((nthreads % warpsize) == 0);
 
-  int const ix_start = (threadIdx.x % nx_threads) + 1;
-  int const iy_start = (threadIdx.x / nx_threads) + 1;
-
-  int const ix_size = nx_threads;
-  int const iy_size = ny_threads;
 
   int const ij_start = threadIdx.x + 1;
-  int const ij_size = nthreads;
+  int const ij_size = blockDim.x;
 
 #else
 
@@ -83,7 +70,7 @@ DEVICE_FUNCTION void kgemm_nt(int const mm, int const nn, int const kk,
       // perform matrix calculations
       // ---------------------------
 
-      for (int ij0 = ij_start - 1; ij0 < (mm * nn); ij0 += ij_size) {
+      for (int ij0 = ij_start; ij0 < (mm * nn); ij0 += ij_size) {
         int const i = (ij0 % mm) + 1;
         int const j = (ij0 - (i - 1)) / mm + 1;
         T cij = 0;
@@ -105,6 +92,7 @@ DEVICE_FUNCTION void kgemm_nt(int const mm, int const nn, int const kk,
             cij += A(i, k) * B(j, k);
           };
         };
+        
         // ------------------
         // store results to C
         // ------------------
