@@ -31,8 +31,9 @@ DEVICE_FUNCTION void kgemm_nt(int const mm, int const nn, int const kk,
 
 #else
 
-  int const ij_start = 1;
+  int const ij_start = 0;
   int const ij_size = 1;
+
 #endif
 
   //  ------------------------------------
