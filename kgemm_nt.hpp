@@ -45,15 +45,15 @@ DEVICE_FUNCTION void kgemm_nt(int const mm, int const nn, int const kk,
   //  ------------------------------------
 
   auto A = [&](int const ia, int const ja) -> T const & {
-    return (A_[indx2f(ia, ja, ldA)]);
+    return (A_[indx2(ia, ja, ldA)]);
   };
 
   auto B = [&](int const ib, int const jb) -> T const & {
-    return (B_[indx2f(ib, jb, ldB)]);
+    return (B_[indx2(ib, jb, ldB)]);
   };
 
   auto C = [&](int const ic, int const jc) -> T & {
-    return (C_[indx2f(ic, jc, ldC)]);
+    return (C_[indx2(ic, jc, ldC)]);
   };
 
       // ---------------------------
@@ -61,27 +61,14 @@ DEVICE_FUNCTION void kgemm_nt(int const mm, int const nn, int const kk,
       // ---------------------------
 
       for (int ij0 = ij_start; ij0 < (mm * nn); ij0 += ij_size) {
-        int const i = (ij0 % mm) + 1;
-        int const j = (ij0 - (i - 1)) / mm + 1;
+        int const i = ij0 % mm;
+        int const j = (ij0 - i) / mm;
         T cij = 0;
-        bool constexpr use_pointer = true;
-        if (use_pointer) {
-          int k = 1;
 
-          T const *Ap = &(A(i, k));
-          int64_t const inc_A = &(A(i, k + 1)) - Ap;
-          T const *Bp = &(B(j, k));
-          int64_t const inc_B = &(B(j, k + 1)) - Bp;
-          for (k = 0; k < kk; k++) {
-            cij += (*Ap) * (*Bp);
-            Ap += inc_A;
-            Bp += inc_B;
-          };
-        } else {
-          for (int k = 1; k <= kk; k++) {
+          for (int k = 0; k < kk; k++) {
             cij += A(i, k) * B(j, k);
           };
-        };
+
         
         // ------------------
         // store results to C
