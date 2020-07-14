@@ -12,9 +12,6 @@ DEVICE_FUNCTION void kgemm_nt(int const mm, int const nn, int const kk,
                               T const alpha, T const *const A_, int const ldA,
                               T const *const B_, int const ldB, T const beta,
                               T *C_, int const ldC) {
-  auto min = [](int const x, int const y) { return ((x < y) ? x : y); };
-
-  int constexpr nb = 32;
 
 #ifdef USE_GPU
 
