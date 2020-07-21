@@ -154,7 +154,9 @@ void kgemm_nt( int const mm, int const nn, int const kk,
 				    case 7: case_code(7)
 				    case 8: case_code(8)
 			            default:
-                                    #pragma unroll  
+                                    #ifdef USE_GPU
+				    #pragma unroll
+                                    #endif  
 				    for(k=0; k < kk; k++) {
 					    cij += (*Ap) * (*Bp);
 					    Ap += inc_A;
