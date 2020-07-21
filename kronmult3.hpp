@@ -90,12 +90,12 @@ void kronmult3( int const n,
 
     int const next_nvec = nvec * n;
 
+
+    SYNCTHREADS;
+    
     // --------------------------------
     // note now X_ is used as workspace
     // --------------------------------
-
-    SYNCTHREADS;
-
     {
     kronmult2( n, next_nvec, 
                A2_, A3_, 

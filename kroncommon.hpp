@@ -54,15 +54,21 @@ float atomicAdd( float volatile *p, float dvalue)
 
 #endif
 
-
+#ifdef USE_LAMBDA
 static inline
 HOST_FUNCTION DEVICE_FUNCTION
 int indx2f( int const i, 
             int const j, 
             int const ld )
 {
-        return( (((i)-1) + ((j)-1)*(ld)) );
+         // return( i-1+(j-1)*ld );
+	 return( i + j*ld - (1 + ld) );
 }
+#else
+
+#define indx2f(i,j,ld)  (  (i) + (j) * (ld) - (1 + (ld)) )
+
+#endif
 
 
 static inline
@@ -74,8 +80,9 @@ int indx3f( int const i1,
             int const n1,
             int const n2 )
 {
-   return(indx2f(i1,i2,n1) + 
-          ((i3)-1)*((n1)*(n2)) );
+    return(indx2f(i1,i2,n1) + 
+	    ((i3)-1)*((n1)*(n2)) );
+    // return( ((i3-1)*n2 + (i2-1))*n1-1+i1 ); 
 }
 
 
@@ -90,8 +97,9 @@ int indx4f( int const i1,
             int const n2,
             int const n3 )
 {
-        return(indx3f(i1,i2,i3,n1,n2) + 
-               ((i4)-1)*((n1)*(n2)*(n3)) );
+  return(indx3f(i1,i2,i3,n1,n2) + 
+	  ((i4)-1)*((n1)*(n2)*(n3)) );
+  //return( (((i4-1)*n3 + (i3-1))*n2 + (i2-1))*n1 - 1 + i1 );
 }
 
 
@@ -109,8 +117,10 @@ int indx5f( int const i1,
             int const n3,
             int const n4 ) 
 {
-        return(indx4f(i1,i2,i3,i4,n1,n2,n3) + 
-               ((i5)-1)*((n1)*(n2)*(n3)*(n4)) );
+	return( indx4f(i1,i2,i3,i4,  n1,n2,n3) + 
+		  (i5-1)*(((n1*n2)*n3)*n4) );
+        // return( ((((i5-1)*n4 + (i4-1))*n3 + (i3-1))*n2 + (i2-1))*n1 -1 + i1 );
+
 }
         
 
@@ -129,8 +139,9 @@ int indx6f(int const i1,
            int const n4,
            int const n5)
 {
-        return(indx5f(i1,i2,i3,i4,i5,n1,n2,n3,n4) + 
-               ((i6)-1)*((n1)*(n2)*(n3)*(n4)*(n5)) );
+	return( indx5f(i1,i2,i3,i4,i5, n1,n2,n3,n4) +
+		(i6-1)*((((n1*n2)*n3)*n4)*n5) );
+        // return( (((((i6-1)*n5 + (i5-1))*n4 + (i4-1))*n3 + (i3-1))*n2 + (i2-1))*n1 -1 + i1);
 }
 
 

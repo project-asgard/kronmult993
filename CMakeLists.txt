@@ -87,6 +87,7 @@
   
 
     add_library(kron SHARED ${KRONSRC})
+    set_target_properties( kron PROPERTIES CUDA_ARCHITECTURES OFF)
     target_compile_features(kron PUBLIC cxx_std_11)
    
     set(TESTSRC 
@@ -107,6 +108,12 @@
     add_executable(test_kronmult6_batched test_kronmult6_batched.cpp)
     add_executable(test_kronmult6_pbatched test_kronmult6_pbatched.cpp) 
     add_executable(test_kronmult6_xbatched test_kronmult6_xbatched.cpp)
+    
+    set_target_properties( kgemm_nn_test PROPERTIES CUDA_ARCHITECTURES OFF)
+    set_target_properties( kgemm_nt_test PROPERTIES CUDA_ARCHITECTURES OFF)
+    set_target_properties( test_kronmult6_batched PROPERTIES CUDA_ARCHITECTURES OFF)
+    set_target_properties( test_kronmult6_pbatched PROPERTIES CUDA_ARCHITECTURES OFF)
+    set_target_properties( test_kronmult6_xbatched PROPERTIES CUDA_ARCHITECTURES OFF)
     
     target_link_libraries(kgemm_nn_test PRIVATE kron) 
     target_link_libraries(kgemm_nt_test PRIVATE kron)

@@ -94,7 +94,6 @@ void kronmult4( int const n,
 
     int const next_nvec = nvec * n;
 
-
     SYNCTHREADS;
 
     // --------------------------------

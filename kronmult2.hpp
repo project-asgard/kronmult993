@@ -94,7 +94,7 @@ void kronmult2( int const n,
     // --------------------------------
 
     SYNCTHREADS;
-    
+
     {
     kronmult1( n, next_nvec, 
                A2_, 
