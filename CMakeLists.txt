@@ -2,7 +2,10 @@
     
     if (USE_GPU)
         project(kronmult LANGUAGES CXX CUDA) 
+        find_package(CUDA 9.0 REQUIRED)
         add_compile_definitions(USE_GPU)
+        set (CMAKE_CUDA_STANDARD 14)
+        set (CMAKE_CUDA_STANDARD_REQUIRED ON)
     else ()
         project(kronmult LANGUAGES CXX) 
     endif ()
@@ -77,6 +80,7 @@
       )
    
     if(USE_GPU)
+    set_target_properties( kronmult_cuda PROPERTIES CUDA_ARCHITECTURES OFF)
 	set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -arch sm_60 --compiler-options -fPIC --keep-device-functions")
         if(USE_MKL)
 	  set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -arch sm_60 --compiler-options -fopenmp -fPIC --keep-device-functions")
