@@ -7,8 +7,7 @@
         project(kronmult LANGUAGES CXX) 
     endif ()
     
-    add_compile_options ("-O3" "-g")
-    
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -O3 -g")
     find_package(OpenMP)
 
     if(OpenMP_CXX_FOUND)
