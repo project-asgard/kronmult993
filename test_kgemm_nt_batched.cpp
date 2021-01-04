@@ -2,6 +2,7 @@
 #include <cassert>
 #include <chrono>
 #include <unistd.h>
+#include<vector>
 #include <cmath>
 
 #ifdef USE_GPU
@@ -106,16 +107,16 @@ T test_kgemm_nt_batched( int const mm,
 
 
 
-        T *Aarray_[batchCount];
-        T *Barray_[batchCount];
-        T *Carray_[batchCount];
+        std::vector<T*> Aarray_(batchCount,NULL);
+        std::vector<T*> Barray_(batchCount,NULL);
+        std::vector<T*> Carray_(batchCount,NULL);
 
         // -------------
         // device arrays
         // -------------
-        T *hdAarray_[batchCount];
-        T *hdBarray_[batchCount];
-        T *hdCarray_[batchCount];
+        std::vector<T*> hdAarray_(batchCount,NULL);
+        std::vector<T*> hdBarray_(batchCount,NULL);
+        std::vector<T*> hdCarray_(batchCount,NULL);
 
         T **ddAarray_ = nullptr;
         T **ddBarray_ = nullptr;
@@ -273,9 +274,9 @@ T test_kgemm_nt_batched( int const mm,
         // --------------------------
         // setup ldA, ldB, ldC arrays
         // --------------------------
-        int ldAarray_[batchCount];
-        int ldBarray_[batchCount];
-        int ldCarray_[batchCount];
+        std::vector<int> ldAarray_(batchCount,0);
+        std::vector<int> ldBarray_(batchCount,0);
+        std::vector<int> ldCarray_(batchCount,0);
         for(int ibatch=0; ibatch < batchCount; ibatch++) {
                 ldAarray_[ibatch] = ldA;
                 ldBarray_[ibatch] = ldB;
