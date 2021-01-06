@@ -1,5 +1,5 @@
     cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
-    
+    cmake_policy(SET CMP0074 NEW)
     if (USE_GPU)
         project(kronmult LANGUAGES CXX CUDA) 
         find_package(CUDA 9.0 REQUIRED)
