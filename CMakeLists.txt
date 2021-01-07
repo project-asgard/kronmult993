@@ -80,7 +80,6 @@
       )
    
     if(USE_GPU)
-    set_target_properties( kronmult_cuda PROPERTIES CUDA_ARCHITECTURES OFF)
 	set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -arch sm_60 --compiler-options -fPIC --keep-device-functions")
         if(USE_MKL)
 	  set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -arch sm_60 --compiler-options -fopenmp -fPIC --keep-device-functions")
@@ -90,7 +89,9 @@
   
 
     add_library(kron SHARED ${KRONSRC})
-    set_target_properties( kron PROPERTIES CUDA_ARCHITECTURES OFF)
+    if(USE_GPU)
+        set_target_properties( kron PROPERTIES CUDA_ARCHITECTURES OFF)
+    endif()
     target_compile_features(kron PUBLIC cxx_std_11)
    
     set(TESTSRC 
