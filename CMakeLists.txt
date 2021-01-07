@@ -1,14 +1,16 @@
     cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
-    
+    cmake_policy(SET CMP0074 NEW)
     if (USE_GPU)
         project(kronmult LANGUAGES CXX CUDA) 
+        find_package(CUDA 9.0 REQUIRED)
         add_compile_definitions(USE_GPU)
+        set (CMAKE_CUDA_STANDARD 14)
+        set (CMAKE_CUDA_STANDARD_REQUIRED ON)
     else ()
         project(kronmult LANGUAGES CXX) 
     endif ()
     
-    add_compile_options ("-O3" "-g")
-    
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -O3 -g")
     find_package(OpenMP)
 
     if(OpenMP_CXX_FOUND)
@@ -78,6 +80,7 @@
       )
    
     if(USE_GPU)
+    set_target_properties( kronmult_cuda PROPERTIES CUDA_ARCHITECTURES OFF)
 	set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -arch sm_60 --compiler-options -fPIC --keep-device-functions")
         if(USE_MKL)
 	  set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -arch sm_60 --compiler-options -fopenmp -fPIC --keep-device-functions")
