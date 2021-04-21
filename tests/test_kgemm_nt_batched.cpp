@@ -139,9 +139,7 @@ T test_kgemm_nt_batched(int const mm, int const nn, int const kk, int const batc
         T *C_ = Carray_[ibatch];
 
         auto A = [&](int const i, int const j) -> T & { return (A_[indx2f(i, j, ldA)]); };
-
         auto B = [&](int const i, int const j) -> T & { return (B_[indx2f(i, j, ldB)]); };
-
         auto C = [&](int const i, int const j) -> T & { return (C_[indx2f(i, j, ldC)]); };
 
         for (int j = 1; j <= ncolA; j++)
@@ -354,9 +352,7 @@ T test_kgemm_nt_batched(int const mm, int const nn, int const kk, int const batc
         T const *const C_ = Carray_[ibatch];
 
         auto A = [&](int const i, int const j) -> T const & { return (A_[indx2f(i, j, ldA)]); };
-
         auto B = [&](int const i, int const j) -> T const & { return (B_[indx2f(i, j, ldB)]); };
-
         auto C = [&](int const i, int const j) -> T const & { return (C_[indx2f(i, j, ldC)]); };
 
         T const cij0 = 1;

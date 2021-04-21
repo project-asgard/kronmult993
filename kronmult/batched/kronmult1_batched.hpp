@@ -31,9 +31,7 @@ kronmult1_batched(int const n, T const Aarray_[], T X_[], T Y_[], T W_[], int co
 #endif
 
     auto X = [&](int const i, int const j) -> T & { return (X_[indx2f(i, j, n)]); };
-
     auto Y = [&](int const i, int const j) -> T & { return (Y_[indx2f(i, j, n)]); };
-
     auto W = [&](int const i, int const j) -> T & { return (W_[indx2f(i, j, n)]); };
 
     auto Aarray = [&](int const i1, int const i2, int const i3, int const i4) -> T const & {

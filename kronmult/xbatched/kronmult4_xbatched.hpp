@@ -37,7 +37,6 @@ GLOBAL_FUNCTION void kronmult4_xbatched(int const n, T const *const Aarray_[], i
 #endif
 
     int const ndim = 4;
-
     auto Aarray = [&](int const i1, int const i2) -> T const * { return (Aarray_[indx2f(i1, i2, ndim)]); };
 
 #ifndef USE_GPU

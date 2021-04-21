@@ -143,23 +143,14 @@ T test_kronmult_xbatched(int const idim, int const n, int const batchCount, int 
     };
 
     auto Aparray = [&](int const i, int const ibatch) -> T *& { return (Aparray_[indx2f(i, ibatch, idim)]); };
-
     auto Xarray = [&](int const i, int const ibatch) -> T & { return (Xarray_[indx2f(i, ibatch, Xsize)]); };
-
     auto Yarray = [&](int const i, int const ibatch) -> T & { return (Yarray_[indx2f(i, ibatch, Xsize)]); };
-
     auto Y2array = [&](int const i, int const ibatch) -> T & { return (Y2array_[indx2f(i, ibatch, Xsize)]); };
-
     auto Zarray = [&](int const i, int const ibatch) -> T & { return (Zarray_[indx2f(i, ibatch, Xsize)]); };
-
     auto Warray = [&](int const i, int const ibatch) -> T & { return (Warray_[indx2f(i, ibatch, Xsize)]); };
-
     auto dXarray = [&](int const i, int const ibatch) -> T & { return (dXarray_[indx2f(i, ibatch, Xsize)]); };
-
     auto dYarray = [&](int const i, int const ibatch) -> T & { return (dYarray_[indx2f(i, ibatch, Xsize)]); };
-
     auto dZarray = [&](int const i, int const ibatch) -> T & { return (dZarray_[indx2f(i, ibatch, Xsize)]); };
-
     auto dWarray = [&](int const i, int const ibatch) -> T & { return (dWarray_[indx2f(i, ibatch, Xsize)]); };
 
     //  ---------------------
@@ -363,17 +354,11 @@ T test_kronmult_xbatched(int const idim, int const n, int const batchCount, int 
             T const *const X_  = &(Xarray(1, ibatch));
 
             auto X = [&](int const i) -> T const & { return (X_[(i)-1]); };
-
             auto A1 = [&](int const i, int const j) -> T const & { return (A1_[indx2f(i, j, lda)]); };
-
             auto A2 = [&](int const i, int const j) -> T const & { return (A2_[indx2f(i, j, lda)]); };
-
             auto A3 = [&](int const i, int const j) -> T const & { return (A3_[indx2f(i, j, lda)]); };
-
             auto A4 = [&](int const i, int const j) -> T const & { return (A4_[indx2f(i, j, lda)]); };
-
             auto A5 = [&](int const i, int const j) -> T const & { return (A5_[indx2f(i, j, lda)]); };
-
             auto A6 = [&](int const i, int const j) -> T const & { return (A6_[indx2f(i, j, lda)]); };
 
             int const max_i1 = (idim >= 1) ? n : 1;

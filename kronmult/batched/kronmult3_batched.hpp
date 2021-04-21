@@ -32,16 +32,14 @@ kronmult3_batched(int const n, T const Aarray_[], T X_[], T Y_[], T W_[], int co
 
     int const n2 = n * n;
     int const n3 = n * n2;
-
     auto X = [&](int const i, int const j) -> T & { return (X_[indx2f(i, j, n3)]); };
-
     auto Y = [&](int const i, int const j) -> T & { return (Y_[indx2f(i, j, n3)]); };
-
     auto W = [&](int const i, int const j) -> T & { return (W_[indx2f(i, j, n3)]); };
 
     auto Aarray = [&](int const i1, int const i2, int const i3, int const i4) -> T const & {
         return (Aarray_[indx4f(i1, i2, i3, i4, n, n, 3)]);
     };
+
     for (int ibatch = iz_start; ibatch <= batchCount; ibatch += iz_size)
     {
         T *const Xp       = &(X(1, ibatch));

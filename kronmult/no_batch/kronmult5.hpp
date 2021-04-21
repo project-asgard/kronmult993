@@ -27,7 +27,6 @@ DEVICE_FUNCTION void kronmult5(int const n, int const nvec, T const A1_[], T con
     int const ldW = n5;
 
     auto X = [&](int const i, int const j) -> T & { return (X_[indx2f(i, j, ldX)]); };
-
     auto W = [&](int const i, int const j) -> T & { return (W_[indx2f(i, j, ldW)]); };
 
     for (int i = 1; i <= nvec; i++)
@@ -42,8 +41,8 @@ DEVICE_FUNCTION void kronmult5(int const n, int const nvec, T const A1_[], T con
         // ----------------------------
 
         auto Xi = [&](int const i, int const j) -> T & { return (Xi_[indx2f(i, j, ldXi)]); };
-
         auto Wi = [&](int const i, int const j) -> T & { return (Wi_[indx2f(i, j, ldWi)]); };
+
         // --------------------------------------------------------
         // Wi(1:n^4, 1:n) = Xi(1:n^4, 1:n) * transpose(A1(1:n,1:n))
         // --------------------------------------------------------

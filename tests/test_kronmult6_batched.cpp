@@ -100,11 +100,8 @@ T test_kronmult_batched(int const idim, int const n, int const batchCount, int c
     };
 
     auto Xarray = [&](int const i, int const ibatch) -> T & { return (Xarray_[indx2f(i, ibatch, Xsize)]); };
-
     auto Yarray = [&](int const i, int const ibatch) -> T & { return (Yarray_[indx2f(i, ibatch, Xsize)]); };
-
     auto Zarray = [&](int const i, int const ibatch) -> T & { return (Zarray_[indx2f(i, ibatch, Xsize)]); };
-
     auto Warray = [&](int const i, int const ibatch) -> T & { return (Warray_[indx2f(i, ibatch, Xsize)]); };
 
     //  ---------------------
@@ -276,19 +273,12 @@ T test_kronmult_batched(int const idim, int const n, int const batchCount, int c
             T *const Y_        = &(Yarray(1, ibatch));
 
             auto X = [&](int const i) -> T const & { return (X_[(i)-1]); };
-
             auto Y = [&](int const i) -> T & { return (Y_[(i)-1]); };
-
             auto A1 = [&](int const i, int const j) -> T const & { return (A1_[indx2f(i, j, n)]); };
-
             auto A2 = [&](int const i, int const j) -> T const & { return (A2_[indx2f(i, j, n)]); };
-
             auto A3 = [&](int const i, int const j) -> T const & { return (A3_[indx2f(i, j, n)]); };
-
             auto A4 = [&](int const i, int const j) -> T const & { return (A4_[indx2f(i, j, n)]); };
-
             auto A5 = [&](int const i, int const j) -> T const & { return (A5_[indx2f(i, j, n)]); };
-
             auto A6 = [&](int const i, int const j) -> T const & { return (A6_[indx2f(i, j, n)]); };
 
             int const max_i1 = (idim >= 1) ? n : 1;

@@ -14,16 +14,12 @@ kgemm_nt_batched(int const mm, int const nn, int const kk, T const alpha, T *con
     // ----------------------------
 
     auto Aarray = [&](int const i) -> T *const & { return (Aarray_[(i)-1]); };
-
     auto Barray = [&](int const i) -> T *const & { return (Barray_[(i)-1]); };
-
     auto Carray = [&](int const i) -> T *const & { return (Carray_[(i)-1]); };
-
     auto ldAarray = [&](int const i) -> int const & { return (ldAarray_[(i)-1]); };
-
     auto ldBarray = [&](int const i) -> int const & { return (ldBarray_[(i)-1]); };
-
     auto ldCarray = [&](int const i) -> int const & { return (ldCarray_[(i)-1]); };
+
 #ifdef USE_GPU
     int const iz_start = blockIdx.x + 1;
     int const iz_size  = gridDim.x;
