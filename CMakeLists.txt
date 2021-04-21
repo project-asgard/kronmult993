@@ -28,7 +28,7 @@ include(CTest)
 
 set(KRONSRC
 		kronmult/kroncommon.hpp
-	# kgemm
+		# kgemm
 		kronmult/kgemm/kgemm_nn_batched.cpp
 		kronmult/kgemm/kgemm_nn_batched.hpp
 		kronmult/kgemm/kgemm_nn.cpp
@@ -37,14 +37,16 @@ set(KRONSRC
 		kronmult/kgemm/kgemm_nt_batched.hpp
 		kronmult/kgemm/kgemm_nt.cpp
 		kronmult/kgemm/kgemm_nt.hpp
-	# no batch
+		# no batch
+		kronmult/no_batch/no_batch.hpp
 		kronmult/no_batch/kronmult1.hpp
 		kronmult/no_batch/kronmult2.hpp
 		kronmult/no_batch/kronmult3.hpp
 		kronmult/no_batch/kronmult4.hpp
 		kronmult/no_batch/kronmult5.hpp
 		kronmult/no_batch/kronmult6.hpp
-	# batched
+		# batched
+		kronmult/batched/batched.hpp
 		kronmult/batched/kronmult1_batched.cpp
 		kronmult/batched/kronmult1_batched.hpp
 		kronmult/batched/kronmult2_batched.cpp
@@ -57,7 +59,8 @@ set(KRONSRC
 		kronmult/batched/kronmult5_batched.hpp
 		kronmult/batched/kronmult6_batched.cpp
 		kronmult/batched/kronmult6_batched.hpp
-	# pbatched
+		# pbatched
+		kronmult/pbatched/pbatched.hpp
 		kronmult/pbatched/kronmult1_pbatched.cpp
 		kronmult/pbatched/kronmult1_pbatched.hpp
 		kronmult/pbatched/kronmult2_pbatched.cpp
@@ -70,7 +73,8 @@ set(KRONSRC
 		kronmult/pbatched/kronmult5_pbatched.hpp
 		kronmult/pbatched/kronmult6_pbatched.hpp
 		kronmult/pbatched/kronmult6_pbatched.cpp
-	# xbatched
+		# xbatched
+		kronmult/xbatched/xbatched.hpp
 		kronmult/xbatched/kronmult1_xbatched.cpp
 		kronmult/xbatched/kronmult1_xbatched.hpp
 		kronmult/xbatched/kronmult2_xbatched.cpp
