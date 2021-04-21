@@ -2,7 +2,8 @@
 
 This code performs a 6-dimensional batched kronecker product on GPU and CPU (using OpenMP).
 
-It is finetuned for the needs of [ASGarD](https://github.com/project-asgard/asgard) and, in particular, we expect our inputs to be slender rectangular matrices.
+It is fine-tuned for the needs of [ASGarD](https://github.com/project-asgard/asgard).
+In particular, we expect our inputs to be slender rectangular matrices.
 
 ## Usage
 
