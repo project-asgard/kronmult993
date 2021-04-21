@@ -12,8 +12,8 @@
 #include <string.h>
 #endif
 
-#include "../src/kroncommon.hpp"
-#include "../src/kgemm/kgemm_nt_batched.hpp"
+#include "../kronmult/kroncommon.hpp"
+#include "../kronmult/kgemm/kgemm_nt_batched.hpp"
 
 static inline
 void host2gpu( void *dest, void *src, size_t nbytes )

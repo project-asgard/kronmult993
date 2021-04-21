@@ -3,13 +3,13 @@
 #include <chrono>
 #include <unistd.h>
 
-#include "../src/kroncommon.hpp"
-#include "../src/batched/kronmult6_batched.hpp"
-#include "../src/batched/kronmult5_batched.hpp"
-#include "../src/batched/kronmult4_batched.hpp"
-#include "../src/batched/kronmult3_batched.hpp"
-#include "../src/batched/kronmult2_batched.hpp"
-#include "../src/batched/kronmult1_batched.hpp"
+#include "../kronmult/kroncommon.hpp"
+#include "../kronmult/batched/kronmult6_batched.hpp"
+#include "../kronmult/batched/kronmult5_batched.hpp"
+#include "../kronmult/batched/kronmult4_batched.hpp"
+#include "../kronmult/batched/kronmult3_batched.hpp"
+#include "../kronmult/batched/kronmult2_batched.hpp"
+#include "../kronmult/batched/kronmult1_batched.hpp"
 
 
 #ifdef USE_GPU
