@@ -38,12 +38,12 @@ set(KRONSRC
 	kronmult/kgemm/kgemm_nt.cpp
 	kronmult/kgemm/kgemm_nt.hpp
 	# no batch
-	kronmult/unbatched/kronmult1.hpp
-	kronmult/unbatched/kronmult2.hpp
-	kronmult/unbatched/kronmult3.hpp
-	kronmult/unbatched/kronmult4.hpp
-	kronmult/unbatched/kronmult5.hpp
-	kronmult/unbatched/kronmult6.hpp
+	kronmult/no_batch/kronmult1.hpp
+	kronmult/no_batch/kronmult2.hpp
+	kronmult/no_batch/kronmult3.hpp
+	kronmult/no_batch/kronmult4.hpp
+	kronmult/no_batch/kronmult5.hpp
+	kronmult/no_batch/kronmult6.hpp
 	# batched
 	kronmult/batched/kronmult1_batched.cpp
 	kronmult/batched/kronmult1_batched.hpp

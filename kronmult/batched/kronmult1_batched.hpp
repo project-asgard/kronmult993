@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../kroncommon.hpp"
-#include "../unbatched/kronmult1.hpp"
+#include "../no_batch/kronmult1.hpp"
 
 
 // --------------------------------------------------------------------

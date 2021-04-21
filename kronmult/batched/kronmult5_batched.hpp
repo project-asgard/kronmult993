@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../kroncommon.hpp"
-#include "../unbatched/kronmult5.hpp"
+#include "../no_batch/kronmult5.hpp"
 
 // --------------------------------------------------------------------
 // Performs  Y(:,k) = kron(A1(k),...,A5(k)) * X(:,k), k=1:batchCount
