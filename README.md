@@ -2,8 +2,8 @@
 
 This code performs a 6-dimensional batched kronecker product on GPU and CPU (using OpenMP).
 
-It is fine-tuned for the needs of [ASGarD](https://github.com/project-asgard/asgard).
-In particular, we expect our inputs to be slender rectangular matrices.
+It is fine-tuned for the needs of [ASGarD](https://github.com/project-asgard/asgard). In particular, we expect our
+inputs to be slender rectangular matrices.
 
 ## Usage
 
@@ -29,5 +29,6 @@ make
 
 ## Tests
 
-The binary targets `test_kgemm_nt_batched` and `test_kronmult6_batched` can be used to test `kgemm_nt_batched` and `kronmult6_batched` respectively.
+The binary targets `test_kgemm_nt_batched` and `test_kronmult6_batched` can be used to test `kgemm_nt_batched`
+and `kronmult6_batched` respectively.
 
