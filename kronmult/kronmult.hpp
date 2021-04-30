@@ -52,7 +52,7 @@ GLOBAL_FUNCTION void multiply_transpose(const T X[], const unsigned int nb_col_X
  * WARNING: `input` and `workspace` will be used as temporary workspaces and thus modified
  */
 template<typename T>
-GLOBAL_FUNCTION void kronmult(const unsigned int matrix_number, const unsigned int matrix_size, const T[] matrix_list[],
+GLOBAL_FUNCTION void kronmult(const unsigned int matrix_number, const unsigned int matrix_size, T const* const matrix_list[],
                               const unsigned int nb_elements_input, T input[],
                               T output[], T workspace[])
 {
@@ -85,7 +85,7 @@ GLOBAL_FUNCTION void kronmult(const unsigned int matrix_number, const unsigned i
  * WARNING: `input_batched` and `workspace_batched` will be used as temporary workspaces and thus modified
  */
 template<typename T>
-GLOBAL_FUNCTION void kronmult_batched(const unsigned int matrix_number, const unsigned int matrix_size, const T*[] matrix_list_batched[],
+GLOBAL_FUNCTION void kronmult_batched(const unsigned int matrix_number, const unsigned int matrix_size, T const* const matrix_list_batched[],
                                       const unsigned int nb_elements_input, T* input_batched[],
                                       T* output_batched[], T* workspace_batched[],
                                       const unsigned int nb_batch)
@@ -98,6 +98,6 @@ GLOBAL_FUNCTION void kronmult_batched(const unsigned int matrix_number, const un
         const T* input = input_batched[i];
         const T* output = output_batched[i];
         const T* workspace = workspace_batched[i];
-        kronmult<T>(matrix_number, matrix_size, matrix_list, nb_elements_input, input, output, workspace)
+        kronmult<T>(matrix_number, matrix_size, matrix_list, nb_elements_input, input, output, workspace);
     }
 }
