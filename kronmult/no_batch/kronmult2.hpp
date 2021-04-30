@@ -15,7 +15,7 @@ DEVICE_FUNCTION void kronmult2(int const n, int const nvec, T const A1_[], T con
                                T W_[], int const lda_in = 0)
 // -----------------
 // note A1 is n by n
-//      X is (n^3 by nvec)
+//      X is (n^2 by nvec)
 // -----------------
 {
     int const lda = (lda_in == 0) ? n : lda_in;
