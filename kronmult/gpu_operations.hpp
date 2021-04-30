@@ -4,6 +4,22 @@
  * operations extracted from the old version's tests
  */
 
+#ifdef USE_GPU
+    #include <cuda.h>
+    #include <cuda_runtime.h>
+    #define GLOBAL_FUNCTION __global__
+    #define SYNCTHREADS __syncthreads()
+    #define SHARED_MEMORY __shared__
+    #define DEVICE_FUNCTION __device__
+    #define HOST_FUNCTION __host__
+#else
+    #define GLOBAL_FUNCTION
+    #define SYNCTHREADS
+    #define SHARED_MEMORY
+    #define DEVICE_FUNCTION
+    #define HOST_FUNCTION
+#endif
+
 static inline void host2gpu(void *dest, void *src, size_t nbytes)
 {
     #ifdef USE_GPU

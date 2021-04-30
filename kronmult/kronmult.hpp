@@ -1,20 +1,6 @@
 #pragma once
 
-#ifdef USE_GPU
-    #include <cuda.h>
-    #include <cuda_runtime.h>
-    #define GLOBAL_FUNCTION __global__
-    #define SYNCTHREADS __syncthreads()
-    #define SHARED_MEMORY __shared__
-    #define DEVICE_FUNCTION __device__
-    #define HOST_FUNCTION __host__
-#else
-    #define GLOBAL_FUNCTION
-    #define SYNCTHREADS
-    #define SHARED_MEMORY
-    #define DEVICE_FUNCTION
-    #define HOST_FUNCTION
-#endif
+#include "gpu_operations.hpp"
 
 /*
  * Computes Y = X^T * M^T
