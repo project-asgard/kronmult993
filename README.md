@@ -1,34 +1,15 @@
-# Kronmult
+# Python's kronmult implementation
 
-This code performs a 6-dimensional batched kronecker product on GPU and CPU (using OpenMP).
+I am 90% such that this is a reinvention of [algorithm 993](Algorithm 993: Efficient Computation with Kronecker Products).
 
-It is fine-tuned for the needs of [ASGarD](https://github.com/project-asgard/asgard). In particular, we expect our
-inputs to be slender rectangular matrices.
+The comments in the code follow the notations from [ON KRONECKER PRODUCTS, TENSOR PRODUCTS AND MATRIX DIFFERENTIAL CALCULUS by Stephen Pollock](https://www.le.ac.uk/economics/research/RePEc/lec/leecon/dp14-02.pdf):
 
-## Usage
-
-**TODO**
-
-## Compilation
-
-To compile the code for CPU, run:
-
+```cpp
+R = (r_i e_i)     // a row vector
+C = (c_j e^i)     // a column vector
+A = (A_ij e_i^j)  // a matrix
+B = (B_jk e_j^k)  // another matrix with a dimenssion in common
+C = (C_kl e_k^l)  // another matrix with no dimenssion in common
+A @ B = (A_ij e_i^j) @ (B_jk e_j^k) = ({A_ij B_jk} e_i^k)   // matrix product
+kron(A,C) = (A_ij C_kl e_ik^jl)   // kronecker product
 ```
-mkdir build && cd build
-cmake ../
-make
-```
-
-To compile the code for an Nvidia GPU, pass the `-DUSE_GPU=1` flag to CMake:
-
-```
-mkdir build && cd build
-cmake ../ -DUSE_GPU=1
-make
-```
-
-## Tests
-
-The binary targets `test_kgemm_nt_batched` and `test_kronmult6_batched` can be used to test `kgemm_nt_batched`
-and `kronmult6_batched` respectively.
-
