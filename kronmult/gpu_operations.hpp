@@ -4,6 +4,8 @@
  * operations extracted from the old version's tests
  */
 
+#include <cstring>
+
 #ifdef USE_GPU
     #include <cuda.h>
     #include <cuda_runtime.h>

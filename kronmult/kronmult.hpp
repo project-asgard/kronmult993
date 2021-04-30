@@ -53,7 +53,7 @@ GLOBAL_FUNCTION void multiply_transpose(const T X[], const unsigned int nb_col_X
  * WARNING: `input` and `workspace` will be used as temporary workspaces and thus modified
  */
 template<typename T>
-GLOBAL_FUNCTION void kronmult(const unsigned int matrix_number, const unsigned int matrix_size, T const* const matrix_list[], const unsigned int matrix_stride,
+GLOBAL_FUNCTION void kronmult(const unsigned int matrix_number, const unsigned int matrix_size, T const * const matrix_list[], const unsigned int matrix_stride,
                               T input[],
                               T output[], T workspace[])
 {
@@ -64,15 +64,15 @@ GLOBAL_FUNCTION void kronmult(const unsigned int matrix_number, const unsigned i
     for(unsigned int i = matrix_number-1; i >= 1; i--)
     {
         // takes `matrix` into account and put the result in `workspace` (use `output` as a workspace if needed)
-        const T matrix[] = matrix_list[i];
+        T const * const matrix = matrix_list[i];
         multiply_transpose<T>(input, nb_col_input, matrix, matrix_size, matrix_stride, workspace, output);
         // swap `input` and `workspace` such that `input` contains once again the input
         std::swap(input, workspace);
     }
 
     // puts the final result in `output` rather than `workspace`
-    const T matrix[] = matrix_list[0];
-    multiply_transpose<T>(input, nb_col_input, matrix, matrix_size, output, workspace);
+    T const * const matrix = matrix_list[0];
+    multiply_transpose<T>(input, nb_col_input, matrix, matrix_size, matrix_stride, output, workspace);
 }
 
 /*
@@ -86,7 +86,7 @@ GLOBAL_FUNCTION void kronmult(const unsigned int matrix_number, const unsigned i
  * WARNING: `input_batched` and `workspace_batched` will be used as temporary workspaces and thus modified
  */
 template<typename T>
-GLOBAL_FUNCTION void kronmult_batched(const unsigned int matrix_number, const unsigned int matrix_size, T const* const matrix_list_batched[], const unsigned int matrix_stride,
+GLOBAL_FUNCTION void kronmult_batched(const unsigned int matrix_number, const unsigned int matrix_size, T const * const matrix_list_batched[], const unsigned int matrix_stride,
                                       T* input_batched[],
                                       T* output_batched[], T* workspace_batched[],
                                       const unsigned int nb_batch)
@@ -95,10 +95,10 @@ GLOBAL_FUNCTION void kronmult_batched(const unsigned int matrix_number, const un
     // TODO we could remove this loop with batched matrix multiplications
     for(unsigned int i=0; i < nb_batch; i++)
     {
-        T const *const matrix_list = matrix_list_batched[i*matrix_number];
-        const T* input = input_batched[i];
-        const T* output = output_batched[i];
-        const T* workspace = workspace_batched[i];
+        T const * const * matrix_list = &matrix_list_batched[i*matrix_number];
+        T* input = input_batched[i];
+        T* output = output_batched[i];
+        T* workspace = workspace_batched[i];
         kronmult<T>(matrix_number, matrix_size, matrix_list, matrix_stride, input, output, workspace);
     }
 }

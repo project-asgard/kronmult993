@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
 cmake_policy(SET CMP0074 NEW)
 
+# TODO
+# clean up this CMakeList
+# we should probably use INTERFACE as the code is header-only
+# https://cmake.org/cmake/help/latest/command/add_library.html#interface-libraries
+
 if (USE_GPU)
     project(kronmult LANGUAGES CXX CUDA)
     find_package(CUDA 9.0 REQUIRED)
@@ -39,6 +44,8 @@ if (USE_GPU)
 endif ()
 
 add_library(kron SHARED ${KRONSRC})
+set_target_properties(kron PROPERTIES LINKER_LANGUAGE CXX)
+
 if (USE_GPU)
     set_target_properties(kron PROPERTIES CUDA_ARCHITECTURES OFF)
 endif ()
@@ -46,9 +53,9 @@ target_compile_features(kron PUBLIC cxx_std_11)
 
 #set(TESTSRC tests/test_kronmult6_xbatched.cpp)
 
-if (USE_GPU)
-    set_source_files_properties(${TESTSRC} PROPERTIES LANGUAGE CUDA)
-endif ()
+#if (USE_GPU)
+#    set_source_files_properties(${TESTSRC} PROPERTIES LANGUAGE CUDA)
+#endif ()
 
 #add_executable(test_kronmult6_xbatched tests/test_kronmult6_xbatched.cpp)
 #set_target_properties(test_kronmult6_xbatched PROPERTIES CUDA_ARCHITECTURES OFF)
