@@ -13,3 +13,12 @@ C = (C_kl e_k^l)  // another matrix with no dimenssion in common
 A @ B = (A_ij e_i^j) @ (B_jk e_j^k) = ({A_ij B_jk} e_i^k)   // matrix product
 kron(A,C) = (A_ij C_kl e_ik^jl)   // kronecker product
 ```
+
+The colmajor and rowmajor storage orders can be translated as follows:
+
+```cpp
+colmajor(A_ij e_ij) = (A_ij e_j^i)
+rowmajor(A_ij e_ij) = (A_ij e_j^i)
+```
+
+Our target, Asgard, uses colmajor.
