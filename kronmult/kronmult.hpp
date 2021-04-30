@@ -9,16 +9,17 @@
  * M is a `size_M` by `size_M` matrix
  * X is a `size_M` by `nb_col_X` matrix
  * Y is a `nb_col_X` by `size_M` matrix
+ * workspace is a `size_M`*`nb_col_X` vector that can be sued to store intermediate values if needed
  *
  * WARNING: the matrices should be stored in col-major order
  * NOTE: we assume that `nb_col_X` is very large compared to `size_M`
  *
- * TODO transposing M in advance might be cheaper as it leads to better alignement, we have one free workspace (Y) where we could store it
+ * TODO transposing M in advance might be cheaper as it leads to better alignement, we could store the transpose in workspace
  */
 template<typename T>
 GLOBAL_FUNCTION void multiply_transpose(const T X[], const unsigned int nb_col_X,
                                         const T M[], const unsigned int size_M,
-                                        T Y[])
+                                        T Y[], T workspace[])
 {
     #define colmajor(row, col, nb_rows) ((row) + (col) * (nb_rows))
 
@@ -62,16 +63,16 @@ GLOBAL_FUNCTION void kronmult(const unsigned int matrix_number, const unsigned i
     // iterates on the matrices from the last to the one just before first
     for(unsigned int i = matrix_number-1; i >= 1; i--)
     {
-        // takes `matrix` into account and put the result in `workspace`
+        // takes `matrix` into account and put the result in `workspace` (use output as a workspace)
         const T matrix[] = matrix_list[i];
-        multiply_transpose<T>(input, nb_col_input, matrix, matrix_size, workspace);
+        multiply_transpose<T>(input, nb_col_input, matrix, matrix_size, workspace, output);
         // swap `input` and `workspace` such that `input` contains once again the input
         std::swap(input, workspace);
     }
 
     // puts the final result in `output` rather than `workspace`
     const T matrix[] = matrix_list[0];
-    multiply_transpose<T>(input, nb_col_input, matrix, matrix_size, output);
+    multiply_transpose<T>(input, nb_col_input, matrix, matrix_size, output, workspace);
 }
 
 /*
