@@ -46,24 +46,24 @@ GLOBAL_FUNCTION void multiply_transpose(const T X[], const unsigned int nb_col_X
  * Computes output = kron(matrix_list) * input
  *
  * `matrix_list` is an array containing pointers to `matrix_number` square matrices of size `matrix_size` by `matrix_size`
- * `input` is a `nb_elements_input` vector (we expect `nb_elements_input` to be matrix_size^matrix_number)
- * `output` is a `nb_elements_input` vector, where the output will be stored
- * `workspace` is a `nb_elements_input` vector, to be used as workspace
+ * `input` is a `matrix_size`^`matrix_number` elements vector
+ * `output` is a `matrix_size`^`matrix_number` elements vector, where the output will be stored
+ * `workspace` is a `matrix_size`^`matrix_number` elements vector, to be used as workspace
  *
  * WARNING: `input` and `workspace` will be used as temporary workspaces and thus modified
  */
 template<typename T>
 GLOBAL_FUNCTION void kronmult(const unsigned int matrix_number, const unsigned int matrix_size, T const* const matrix_list[],
-                              const unsigned int nb_elements_input, T input[],
+                              T input[],
                               T output[], T workspace[])
 {
     // how many column should `input` have for the multiplications to be legal
-    const unsigned int nb_col_input = nb_elements_input / matrix_size; // matrix_size^(matrix_number - 1)
+    const unsigned int nb_col_input = std::pow(matrix_size, matrix_number - 1); // TODO implicit float convertion, use a pow_int function instead
 
     // iterates on the matrices from the last to the one just before first
     for(unsigned int i = matrix_number-1; i >= 1; i--)
     {
-        // takes `matrix` into account and put the result in `workspace` (use output as a workspace)
+        // takes `matrix` into account and put the result in `workspace` (use `output` as a workspace if needed)
         const T matrix[] = matrix_list[i];
         multiply_transpose<T>(input, nb_col_input, matrix, matrix_size, workspace, output);
         // swap `input` and `workspace` such that `input` contains once again the input
@@ -79,15 +79,16 @@ GLOBAL_FUNCTION void kronmult(const unsigned int matrix_number, const unsigned i
  * Computes output[K] = kron(matrix_list[K]) * input[K] for 0 <= k < batchCount
  *
  * `matrix_list_batched` is an array of `nb_batch`*`matrix_number` pointers to square matrices of size `matrix_size` by `matrix_size`
- * `input_batched` is an array of `nb_batch` vectors of size `nb_elements_input` (we expect `nb_elements_input` to be matrix_size^matrix_number)
- * `output_batched` is an array of `nb_batch` vectors of size `nb_elements_input`, where the outputs will be stored
- * `workspace` is an array of `nb_batch` vectors of size `nb_elements_input`, to be used as workspaces
+ * `input_batched` is an array of `nb_batch` vectors of size `matrix_size`^`matrix_number`
+ * `output_batched` is an array of `nb_batch` vectors of size `matrix_size`^`matrix_number`, where the outputs will be stored
+ * `workspace` is an array of `nb_batch` vectors of size `matrix_size`^`matrix_number`, to be used as workspaces
  *
  * WARNING: `input_batched` and `workspace_batched` will be used as temporary workspaces and thus modified
  */
 template<typename T>
 GLOBAL_FUNCTION void kronmult_batched(const unsigned int matrix_number, const unsigned int matrix_size, T const* const matrix_list_batched[],
-                                      const unsigned int nb_elements_input, T* input_batched[],
+                                      const unsigned int lda, // TODO what does lda represents?
+                                      T* input_batched[],
                                       T* output_batched[], T* workspace_batched[],
                                       const unsigned int nb_batch)
 {
@@ -99,6 +100,6 @@ GLOBAL_FUNCTION void kronmult_batched(const unsigned int matrix_number, const un
         const T* input = input_batched[i];
         const T* output = output_batched[i];
         const T* workspace = workspace_batched[i];
-        kronmult<T>(matrix_number, matrix_size, matrix_list, nb_elements_input, input, output, workspace);
+        kronmult<T>(matrix_number, matrix_size, matrix_list, input, output, workspace);
     }
 }
