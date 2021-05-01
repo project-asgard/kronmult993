@@ -27,7 +27,7 @@ int pow_int(const int number, const int power)
  *
  * TODO transposing M in advance might be cheaper as it leads to better alignement, we would need  workspace to store it
  */
-template<typename T, bool should_zero_Y>
+template<typename T>
 GLOBAL_FUNCTION void multiply_transpose(const T X[], const int nb_col_X,
                                         const T M[], const int size_M, const int stride_M,
                                         T Y[])
@@ -35,17 +35,11 @@ GLOBAL_FUNCTION void multiply_transpose(const T X[], const int nb_col_X,
     #define colmajor(row, col, nb_rows) ((row) + (col) * (nb_rows))
 
     // this first loop has much more iterations than the inner loops
-    #ifndef USE_GPU
-    #pragma omp parallel for
-    #endif
     for(int colX=0; colX < nb_col_X; colX++)
     {
         for(int rowM=0; rowM < size_M; rowM++)
         {
-            if(should_zero_Y)
-            {
-                Y[colmajor(colX,rowM,nb_col_X)] = 0.;
-            }
+            Y[colmajor(colX,rowM,nb_col_X)] = 0.;
             for(int k=0; k < size_M; k++)
             {
                 Y[colmajor(colX,rowM,nb_col_X)] += X[colmajor(k,colX,size_M)] * M[colmajor(rowM,k,stride_M)];
@@ -57,41 +51,39 @@ GLOBAL_FUNCTION void multiply_transpose(const T X[], const int nb_col_X,
 }
 
 /*
- * Computes output += kron(matrix_list) * input
+ * Computes kron(matrix_list) * input
+ * Returns a pointeur to an array containing the result (`workspace` if `matrix_number` is odd and `input` if it is even)
  *
  * `matrix_list` is an array containing pointers to `matrix_number` square matrices of size `matrix_size` by `matrix_size` and stride `matrix_stride`
- * `input` is a `matrix_size`^`matrix_number` elements vector
- * `output` is a `matrix_size`^`matrix_number` elements vector, where the output will be stored
- * `workspace` is a `matrix_size`^`matrix_number` elements vector, to be used as workspace
+ * `input` is a `size_input`=`matrix_size`^`matrix_number` elements vector
+ * `output` is a `size_input` elements vector, where the output will be stored
+ * `workspace` is a `size_input` elements vector, to be used as workspace
  *
  * WARNINGS:
  * `input` and `workspace` will be used as temporary workspaces and thus modified
  * the matrices should be stored in col-major order
  */
 template<typename T>
-GLOBAL_FUNCTION void kronmult(const int matrix_number, const int matrix_size, T const * const matrix_list[], const int matrix_stride,
-                              T input[],
-                              T output[], T workspace[])
+GLOBAL_FUNCTION T* kronmult(const int matrix_number, const int matrix_size, T const * const matrix_list[], const int matrix_stride,
+                            T input[], const int size_input,
+                            T workspace[])
 {
     // how many column should `input` have for the multiplications to be legal
-    const int nb_col_input = pow_int(matrix_size, matrix_number - 1);
+    const int nb_col_input = size_input / matrix_size;
 
     // iterates on the matrices from the last to the one just before first
-    for(int i = matrix_number-1; i >= 1; i--)
+    for(int i = matrix_number-1; i >= 0; i--)
     {
         // takes `matrix` into account and put the result in `workspace` (use `output` as a workspace if needed)
         T const * const matrix = matrix_list[i];
-        multiply_transpose<T, true>(input, nb_col_input, matrix, matrix_size, matrix_stride, workspace);
+        multiply_transpose<T>(input, nb_col_input, matrix, matrix_size, matrix_stride, workspace);
         // swap `input` and `workspace` such that `input` contains once again the input
         // note that, while they have the same size flattened, the shape (nb_columns and nb_rows) of `input` and `workspace` are different
         // this is on purpose and equivalent to a reshape operation that is actually needed by the algorithm
         std::swap(input, workspace);
     }
 
-    // puts the final result in `output` rather than `workspace`
-    // the result is *added* to output (rather than zeroing it out)
-    T const * const matrix = matrix_list[0];
-    multiply_transpose<T, false>(input, nb_col_input, matrix, matrix_size, matrix_stride, output);
+    return input;
 }
 
 /*
@@ -112,14 +104,36 @@ GLOBAL_FUNCTION void kronmult_batched(const int matrix_number, const int matrix_
                                       T* output_batched[], T* workspace_batched[],
                                       const int nb_batch)
 {
+    // numbers of elements in the input vector
+    int size_input = pow_int(matrix_size, matrix_number);
+
     // runs kronmult one batch at a time
-    // TODO we could remove this loop with batched matrix multiplications
+    #ifndef USE_GPU
+    #pragma omp parallel for
+    #endif
     for(int i=0; i < nb_batch; i++)
     {
+        // computes kronmult
         T const * const * matrix_list = &matrix_list_batched[i*matrix_number];
         T* input = input_batched[i];
-        T* output = output_batched[i];
         T* workspace = workspace_batched[i];
-        kronmult<T>(matrix_number, matrix_size, matrix_list, matrix_stride, input, output, workspace);
+        // result is stored in `workspace` if `matrix_number` is odd and `input` if it is even
+        kronmult<T>(matrix_number, matrix_size, matrix_list, matrix_stride, input, size_input, workspace);
+    }
+
+    // adds the results to the outputs in a protected way
+    T** result_batched = (matrix_number % 2 == 0) ? input_batched : workspace_batched;
+    for(int i=0; i < nb_batch; i++)
+    {
+        T* result = result_batched[i];
+        T* output = output_batched[i];
+
+        // TODO can we do more efficient here ?
+        //  parallel on upper loop + atomic ?
+        #pragma omp parallel for
+        for(int j = 0; j < size_input; j++)
+        {
+            output[j] += result[j];
+        }
     }
 }
