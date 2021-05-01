@@ -1,6 +1,6 @@
 #pragma once
 #include "gpu_operations.hpp"
-#include <iostream>
+#include "omp_reduction.hpp"
 
 /*
  * computes number^power for integers
@@ -121,24 +121,7 @@ GLOBAL_FUNCTION void kronmult_batched(const int matrix_number, const int matrix_
         kronmult<T>(matrix_number, matrix_size, matrix_list, matrix_stride, input, size_input, workspace);
     }
 
-    // adds the results to the outputs in a protected way
-    // TODO can we do more efficient here ?
-    //  parallel on upper loop + atomic ?
-    //  the best would be to be sure that the output vector are all one and the same
-    //  we could then use a proper parallel reduction using intermediate results as storage
-    T** result_batched = (matrix_number % 2 == 0) ? input_batched : workspace_batched;
-    #pragma omp parallel
-    {
-        for(int i=0; i < nb_batch; i++)
-        {
-            T* result = result_batched[i];
-            T* output = output_batched[i];
-
-            #pragma omp for nowait
-            for(int j = 0; j < size_input; j++)
-            {
-                output[j] += result[j];
-            }
-        }
-    };
+    // adds the results to the outputs in a threadsafe way
+    T** intermediate_output_batched = (matrix_number % 2 == 0) ? input_batched : workspace_batched;
+    reduction<T>(nb_batch, intermediate_output_batched , output_batched, size_input);
 }

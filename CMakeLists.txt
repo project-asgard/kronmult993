@@ -33,7 +33,7 @@ include(CTest)
 
 set(KRONSRC
         kronmult/kronmult.hpp
-        kronmult/gpu_operations.hpp)
+        kronmult/gpu_operations.hpp kronmult/omp_reduction.hpp)
 
 if (USE_GPU)
     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -arch sm_60 --compiler-options -fPIC --keep-device-functions")
