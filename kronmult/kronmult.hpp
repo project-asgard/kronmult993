@@ -64,7 +64,7 @@ GLOBAL_FUNCTION void multiply_transpose(const T X[], const int nb_col_X,
  * `output` is a `matrix_size`^`matrix_number` elements vector, where the output will be stored
  * `workspace` is a `matrix_size`^`matrix_number` elements vector, to be used as workspace
  *
- * WARNING:
+ * WARNINGS:
  * `input` and `workspace` will be used as temporary workspaces and thus modified
  * the matrices should be stored in col-major order
  */
@@ -102,7 +102,7 @@ GLOBAL_FUNCTION void kronmult(const int matrix_number, const int matrix_size, T 
  * `output_batched` is an array of `nb_batch` vectors of size `matrix_size`^`matrix_number`, where the outputs will be stored
  * `workspace` is an array of `nb_batch` vectors of size `matrix_size`^`matrix_number`, to be used as workspaces
  *
- * WARNING:
+ * WARNINGS:
  * `input_batched` and `workspace_batched` will be used as temporary workspaces and thus modified
  * the matrices should be stored in col-major order
  */
