@@ -3,11 +3,11 @@
 #include <iostream>
 
 /*
- * computes number^power
+ * computes number^power for integers
  * does not care about performances
- * does not use std::pow as it does an implicit float conversion that could lead to imprecisions for high numbers
+ * does not use std::pow as it does an implicit float conversion that could lead to rounding errors for high numbers
  */
-unsigned int pow_int(const unsigned int number, const unsigned int power)
+int pow_int(const int number, const int power)
 {
     if(power == 0) return 1;
     return number * pow_int(number, power-1);
@@ -28,8 +28,8 @@ unsigned int pow_int(const unsigned int number, const unsigned int power)
  * TODO transposing M in advance might be cheaper as it leads to better alignement, we would need  workspace to store it
  */
 template<typename T, bool should_zero_Y>
-GLOBAL_FUNCTION void multiply_transpose(const T X[], const unsigned int nb_col_X,
-                                        const T M[], const unsigned int size_M, const unsigned int stride_M,
+GLOBAL_FUNCTION void multiply_transpose(const T X[], const int nb_col_X,
+                                        const T M[], const int size_M, const int stride_M,
                                         T Y[])
 {
     #define colmajor(row, col, nb_rows) ((row) + (col) * (nb_rows))
@@ -38,15 +38,15 @@ GLOBAL_FUNCTION void multiply_transpose(const T X[], const unsigned int nb_col_X
     #ifndef USE_GPU
     #pragma omp parallel for
     #endif
-    for(unsigned int colX=0; colX < nb_col_X; colX++)
+    for(int colX=0; colX < nb_col_X; colX++)
     {
-        for(unsigned int rowM=0; rowM < size_M; rowM++)
+        for(int rowM=0; rowM < size_M; rowM++)
         {
             if(should_zero_Y)
             {
                 Y[colmajor(colX,rowM,nb_col_X)] = 0.;
             }
-            for(unsigned int k=0; k < size_M; k++)
+            for(int k=0; k < size_M; k++)
             {
                 Y[colmajor(colX,rowM,nb_col_X)] += X[colmajor(k,colX,size_M)] * M[colmajor(rowM,k,stride_M)];
             }
@@ -67,15 +67,15 @@ GLOBAL_FUNCTION void multiply_transpose(const T X[], const unsigned int nb_col_X
  * WARNING: `input` and `workspace` will be used as temporary workspaces and thus modified
  */
 template<typename T>
-GLOBAL_FUNCTION void kronmult(const unsigned int matrix_number, const unsigned int matrix_size, T const * const matrix_list[], const unsigned int matrix_stride,
+GLOBAL_FUNCTION void kronmult(const int matrix_number, const int matrix_size, T const * const matrix_list[], const int matrix_stride,
                               T input[],
                               T output[], T workspace[])
 {
     // how many column should `input` have for the multiplications to be legal
-    const unsigned int nb_col_input = pow_int(matrix_size, matrix_number - 1);
+    const int nb_col_input = pow_int(matrix_size, matrix_number - 1);
 
     // iterates on the matrices from the last to the one just before first
-    for(unsigned int i = matrix_number-1; i >= 1; i--)
+    for(int i = matrix_number-1; i >= 1; i--)
     {
         // takes `matrix` into account and put the result in `workspace` (use `output` as a workspace if needed)
         T const * const matrix = matrix_list[i];
@@ -103,14 +103,14 @@ GLOBAL_FUNCTION void kronmult(const unsigned int matrix_number, const unsigned i
  * WARNING: `input_batched` and `workspace_batched` will be used as temporary workspaces and thus modified
  */
 template<typename T>
-GLOBAL_FUNCTION void kronmult_batched(const unsigned int matrix_number, const unsigned int matrix_size, T const * const matrix_list_batched[], const unsigned int matrix_stride,
+GLOBAL_FUNCTION void kronmult_batched(const int matrix_number, const int matrix_size, T const * const matrix_list_batched[], const int matrix_stride,
                                       T* input_batched[],
                                       T* output_batched[], T* workspace_batched[],
-                                      const unsigned int nb_batch)
+                                      const int nb_batch)
 {
     // runs kronmult one batch at a time
     // TODO we could remove this loop with batched matrix multiplications
-    for(unsigned int i=0; i < nb_batch; i++)
+    for(int i=0; i < nb_batch; i++)
     {
         T const * const * matrix_list = &matrix_list_batched[i*matrix_number];
         T* input = input_batched[i];
