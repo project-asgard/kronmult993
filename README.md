@@ -8,6 +8,7 @@ In particular, we expect our inputs to be *col-major* square matrices.
 # Theory
 
 We implement a variant of the backward version of algorithm 993 ([Algorithm 993: Efficient Computation with Kronecker Products](https://dl.acm.org/doi/abs/10.1145/3291041)), chosen to perform well on col-major matrices.
+
 We highly recommend reading [ON KRONECKER PRODUCTS, TENSOR PRODUCTS AND MATRIX DIFFERENTIAL CALCULUS by Stephen Pollock](https://www.le.ac.uk/economics/research/RePEc/lec/leecon/dp14-02.pdf) to get more familiar with the algebra and reshaping tricks techniques used in the implementation.
 
 ## Usage
