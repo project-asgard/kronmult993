@@ -1,6 +1,17 @@
 #pragma once
-
 #include "gpu_operations.hpp"
+#include <iostream>
+
+/*
+ * computes number^power
+ * does not care about performances
+ * does not use std::pow as it does an implicit float conversion that could lead to imprecisions for high numbers
+ */
+unsigned int pow_int(const unsigned int number, const unsigned int power)
+{
+    if(power == 0) return 1;
+    return number * pow_int(number, power-1);
+}
 
 /*
  * Computes Y = X^T * M^T
@@ -9,17 +20,17 @@
  * M is a `size_M` by `size_M` matrix of stride `matrix_stride`
  * X is a `size_M` by `nb_col_X` matrix
  * Y is a `nb_col_X` by `size_M` matrix
- * workspace is a `size_M`*`nb_col_X` vector that can be sued to store intermediate values if needed
+ * should_zero_Y (template argument to eliminate the test at compile time) decides whether the algorithm will add the result to Y or overwrite it
  *
  * WARNING: the matrices should be stored in col-major order
  * NOTE: we assume that `nb_col_X` is very large compared to `size_M`
  *
- * TODO transposing M in advance might be cheaper as it leads to better alignement, we could store the transpose in workspace
+ * TODO transposing M in advance might be cheaper as it leads to better alignement, we would need  workspace to store it
  */
-template<typename T>
+template<typename T, bool should_zero_Y>
 GLOBAL_FUNCTION void multiply_transpose(const T X[], const unsigned int nb_col_X,
                                         const T M[], const unsigned int size_M, const unsigned int stride_M,
-                                        T Y[], T workspace[])
+                                        T Y[])
 {
     #define colmajor(row, col, nb_rows) ((row) + (col) * (nb_rows))
 
@@ -31,7 +42,10 @@ GLOBAL_FUNCTION void multiply_transpose(const T X[], const unsigned int nb_col_X
     {
         for(unsigned int rowM=0; rowM < size_M; rowM++)
         {
-            Y[colmajor(colX,rowM,nb_col_X)] = 0.;
+            if(should_zero_Y)
+            {
+                Y[colmajor(colX,rowM,nb_col_X)] = 0.;
+            }
             for(unsigned int k=0; k < size_M; k++)
             {
                 Y[colmajor(colX,rowM,nb_col_X)] += X[colmajor(k,colX,size_M)] * M[colmajor(rowM,k,stride_M)];
@@ -43,7 +57,7 @@ GLOBAL_FUNCTION void multiply_transpose(const T X[], const unsigned int nb_col_X
 }
 
 /*
- * Computes output = kron(matrix_list) * input
+ * Computes output += kron(matrix_list) * input
  *
  * `matrix_list` is an array containing pointers to `matrix_number` square matrices of size `matrix_size` by `matrix_size` and stride `matrix_stride`
  * `input` is a `matrix_size`^`matrix_number` elements vector
@@ -58,25 +72,28 @@ GLOBAL_FUNCTION void kronmult(const unsigned int matrix_number, const unsigned i
                               T output[], T workspace[])
 {
     // how many column should `input` have for the multiplications to be legal
-    const unsigned int nb_col_input = std::pow(matrix_size, matrix_number - 1); // TODO implicit float convertion, use a pow_int function instead
+    const unsigned int nb_col_input = pow_int(matrix_size, matrix_number - 1);
 
     // iterates on the matrices from the last to the one just before first
     for(unsigned int i = matrix_number-1; i >= 1; i--)
     {
         // takes `matrix` into account and put the result in `workspace` (use `output` as a workspace if needed)
         T const * const matrix = matrix_list[i];
-        multiply_transpose<T>(input, nb_col_input, matrix, matrix_size, matrix_stride, workspace, output);
+        multiply_transpose<T, true>(input, nb_col_input, matrix, matrix_size, matrix_stride, workspace);
         // swap `input` and `workspace` such that `input` contains once again the input
+        // note that, while they have the same size flattened, the shape (nb_columns and nb_rows) of `input` and `workspace` are different
+        // this is on purpose and equivalent to a reshape operation that is actually needed by the algorithm
         std::swap(input, workspace);
     }
 
     // puts the final result in `output` rather than `workspace`
+    // the result is *added* to output (rather than zeroing it out)
     T const * const matrix = matrix_list[0];
-    multiply_transpose<T>(input, nb_col_input, matrix, matrix_size, matrix_stride, output, workspace);
+    multiply_transpose<T, false>(input, nb_col_input, matrix, matrix_size, matrix_stride, output);
 }
 
 /*
- * Computes output[K] = kron(matrix_list[K]) * input[K] for 0 <= k < batchCount
+ * Computes output[K] += kron(matrix_list[K]) * input[K] for 0 <= k < batchCount
  *
  * `matrix_list_batched` is an array of `nb_batch`*`matrix_number` pointers to square matrices of size `matrix_size` by `matrix_size` and stride `matrix_stride`
  * `input_batched` is an array of `nb_batch` vectors of size `matrix_size`^`matrix_number`
