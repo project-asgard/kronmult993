@@ -1,9 +1,9 @@
 # Kronmult
 
-This code performs a 6-dimensional batched kronecker product on GPU and CPU (using OpenMP).
+This code implements kronmult for both GPU (using CUDA) and CPU (using OpenMP).
 
-It is fine-tuned for the needs of [ASGarD](https://github.com/project-asgard/asgard). In particular, we expect our
-inputs to be slender rectangular matrices.
+It is fine-tuned for the needs of [ASGarD](https://github.com/project-asgard/asgard).
+In particular, we expect our inputs to be slender rectangular matrices.
 
 ## Usage
 
@@ -26,9 +26,3 @@ mkdir build && cd build
 cmake ../ -DUSE_GPU=1
 make
 ```
-
-## Tests
-
-The binary targets `test_kgemm_nt_batched` and `test_kronmult6_batched` can be used to test `kgemm_nt_batched`
-and `kronmult6_batched` respectively.
-
