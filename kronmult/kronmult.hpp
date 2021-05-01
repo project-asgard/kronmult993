@@ -122,18 +122,23 @@ GLOBAL_FUNCTION void kronmult_batched(const int matrix_number, const int matrix_
     }
 
     // adds the results to the outputs in a protected way
+    // TODO can we do more efficient here ?
+    //  parallel on upper loop + atomic ?
+    //  the best would be to be sure that the output vector are all one and the same
+    //  we could then use a proper parallel reduction using intermediate results as storage
     T** result_batched = (matrix_number % 2 == 0) ? input_batched : workspace_batched;
-    for(int i=0; i < nb_batch; i++)
+    #pragma omp parallel
     {
-        T* result = result_batched[i];
-        T* output = output_batched[i];
-
-        // TODO can we do more efficient here ?
-        //  parallel on upper loop + atomic ?
-        #pragma omp parallel for
-        for(int j = 0; j < size_input; j++)
+        for(int i=0; i < nb_batch; i++)
         {
-            output[j] += result[j];
+            T* result = result_batched[i];
+            T* output = output_batched[i];
+
+            #pragma omp for nowait
+            for(int j = 0; j < size_input; j++)
+            {
+                output[j] += result[j];
+            }
         }
-    }
+    };
 }
