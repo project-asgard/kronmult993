@@ -1,6 +1,6 @@
 #pragma once
 #include "linear_algebra.hpp"
-#include "omp_reduction.hpp"
+#include "reduction.hpp"
 
 /*
  * computes number^power for integers
