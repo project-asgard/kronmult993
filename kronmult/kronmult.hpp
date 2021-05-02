@@ -28,9 +28,9 @@ int pow_int(const int number, const int power)
  * the matrices should be stored in col-major order
  */
 template<typename T>
-GLOBAL_FUNCTION T* kronmult(const int matrix_number, const int matrix_size, T const * const matrix_list[], const int matrix_stride,
-                            T input[], const int size_input,
-                            T workspace[], T transpose_workspace[])
+T* kronmult(const int matrix_number, const int matrix_size, T const * const matrix_list[], const int matrix_stride,
+            T input[], const int size_input,
+            T workspace[], T transpose_workspace[])
 {
     // how many column should `input` have for the multiplications to be legal
     const int nb_col_input = size_input / matrix_size;
@@ -63,10 +63,10 @@ GLOBAL_FUNCTION T* kronmult(const int matrix_number, const int matrix_size, T co
  * the matrices should be stored in col-major order
  */
 template<typename T>
-GLOBAL_FUNCTION void kronmult_batched(const int matrix_number, const int matrix_size, T const * const matrix_list_batched[], const int matrix_stride,
-                                      T* input_batched[],
-                                      T* output_batched[], T* workspace_batched[],
-                                      const int nb_batch)
+void kronmult_batched(const int matrix_number, const int matrix_size, T const * const matrix_list_batched[], const int matrix_stride,
+                      T* input_batched[],
+                      T* output_batched[], T* workspace_batched[],
+                      const int nb_batch)
 {
     // numbers of elements in the input vector
     int size_input = pow_int(matrix_size, matrix_number);
