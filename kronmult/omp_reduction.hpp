@@ -19,6 +19,7 @@ void reduction_slice_rec(T* intermediate_output_batched[], int first_batch, int 
         for(int b = first_batch+1; b < last_batch; b++)
         {
             T* intermediate_output = intermediate_output_batched[b];
+            #pragma omp simd
             for(int i = 0; i < nb_elements; i++)
             {
                 output[i] += intermediate_output[i];
@@ -40,9 +41,8 @@ void reduction_slice_rec(T* intermediate_output_batched[], int first_batch, int 
         #pragma omp taskwait
 
         // puts the outputs gathered in mid_batch into first_batch
-        // TODO this could be paralelized over the threads at hand
-        //  but omp for will not work as we are inside a single
         T* intermediate_output = intermediate_output_batched[mid_batch];
+        #pragma omp simd
         for(int i = 0; i < nb_elements; i++)
         {
             output[i] += intermediate_output[i];

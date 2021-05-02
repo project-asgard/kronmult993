@@ -14,6 +14,26 @@ int pow_int(const int number, const int power)
 }
 
 /*
+ * transpose a square matrix with a given stride into the given output matrix (assume to have a stride of matrix_size)
+ * the matrix is assumed to be in column major orientation
+ */
+template<typename T>
+GLOBAL_FUNCTION void transpose(const T input[], T output[], const int matrix_size, const int input_stride)
+{
+    #define colmajor(row, col, nb_rows) ((row) + (col) * (nb_rows))
+
+    for(int r = 0; r < matrix_size; r++)
+    {
+        for(int c = 0; c < matrix_size; c++)
+        {
+            output[colmajor(r, c, matrix_size)] = input[colmajor(c, r, input_stride)];
+        }
+    }
+
+    #undef colmajor
+}
+
+/*
  * Computes Y = X^T * M^T
  *      <=> Y[i,j] = X[k,i] * M[j,k]
  *
@@ -24,8 +44,6 @@ int pow_int(const int number, const int power)
  *
  * WARNING: the matrices should be stored in col-major order
  * NOTE: we assume that `nb_col_X` is very large compared to `size_M`
- *
- * TODO transposing M in advance might be cheaper as it leads to better alignement, we would need  workspace to store it
  */
 template<typename T>
 GLOBAL_FUNCTION void multiply_transpose(const T X[], const int nb_col_X,
@@ -34,18 +52,30 @@ GLOBAL_FUNCTION void multiply_transpose(const T X[], const int nb_col_X,
 {
     #define colmajor(row, col, nb_rows) ((row) + (col) * (nb_rows))
 
-    // this first loop has much more iterations than the inner loops
-    for(int colX=0; colX < nb_col_X; colX++)
+    // transpose the matrix to get a better alignement
+    // TODO would be more efficient if we recycled the transposition workspace between multiplications
+    // TODO would be more efficient if asgard feed us transposed matrices
+    T* M_transposed = new T[size_M*size_M];
+    transpose(M, M_transposed, size_M, stride_M);
+
+    for(int rowM=0; rowM < size_M; rowM++)
     {
-        for(int rowM=0; rowM < size_M; rowM++)
+        const T* M_transposed_col = &M_transposed[colmajor(0,rowM,size_M)];
+        for(int colX=0; colX < nb_col_X; colX++)
         {
-            Y[colmajor(colX,rowM,nb_col_X)] = 0.;
+            const T* X_transposed_row = &X[colmajor(0,colX,size_M)];
+            T dotprod = 0.;
+            #pragma omp simd reduction(+:dotprod)
             for(int k=0; k < size_M; k++)
             {
-                Y[colmajor(colX,rowM,nb_col_X)] += X[colmajor(k,colX,size_M)] * M[colmajor(rowM,k,stride_M)];
+                dotprod += X_transposed_row[k] * M_transposed_col[k];
             }
+            Y[colmajor(colX,rowM,nb_col_X)] = dotprod;
         }
     }
+
+    // free the workspace memory
+    delete[] M_transposed;
 
     #undef colmajor
 }
