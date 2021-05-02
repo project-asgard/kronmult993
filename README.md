@@ -16,16 +16,16 @@ We highly recommend reading [ON KRONECKER PRODUCTS, TENSOR PRODUCTS AND MATRIX D
 We implemented a basic and a batched version of the algorithm:
 
 ```cpp
-#include <kronmult/kronmult.hpp>
+#include <kronmult/kronmult_openmp.hpp>
 
-void kronmult(const int matrix_number, const int matrix_size, T const * const matrix_list[], const int matrix_stride,
-              T input[], const int size_input,
-              T workspace[], T transpose_workspace[])
+void kronmult_openmp::kronmult(const int matrix_number, const int matrix_size, T const * const matrix_list[], const int matrix_stride,
+                               T input[], const int size_input,
+                               T workspace[], T transpose_workspace[])
 
-void kronmult_batched(const int matrix_number, const int matrix_size, T const * const matrix_list_batched[], const int matrix_stride,
-                      T* input_batched[],
-                      T* output_batched[], T* workspace_batched[],
-                      const int nb_batch)
+void kronmult_openmp::kronmult_batched(const int matrix_number, const int matrix_size, T const * const matrix_list_batched[], const int matrix_stride,
+                                       T* input_batched[],
+                                       T* output_batched[], T* workspace_batched[],
+                                       const int nb_batch)
 ```
 
 They both compute `output += kron(matrix_list) * input`.

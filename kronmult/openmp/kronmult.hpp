@@ -94,5 +94,5 @@ void kronmult_batched(const int matrix_number, const int matrix_size, T const * 
 
     // adds the results to the outputs in a threadsafe way
     T** intermediate_output_batched = (matrix_number % 2 == 0) ? input_batched : workspace_batched;
-    openmp_reduction<T>(nb_batch, intermediate_output_batched , output_batched, size_input);
+    reduction<T>(nb_batch, intermediate_output_batched , output_batched, size_input);
 }

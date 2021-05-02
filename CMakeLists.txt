@@ -32,10 +32,15 @@ endif ()
 include(CTest)
 
 set(KRONSRC
-        kronmult/kronmult.hpp
-        kronmult/linear_algebra.hpp
-        kronmult/omp_reduction.hpp
-        kronmult/gpu_operations.hpp)
+        kronmult/kronmult_openmp.hpp
+        kronmult/kronmult_gpu.hpp
+        # openMP
+        kronmult/openmp/kronmult.hpp
+        kronmult/openmp/linear_algebra.hpp
+        kronmult/openmp/omp_reduction.hpp
+        # GPU
+        kronmult/gpu/kronmult.hpp
+        kronmult/gpu/gpu_operations.hpp)
 
 if (USE_GPU)
     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -arch sm_60 --compiler-options -fPIC --keep-device-functions")
