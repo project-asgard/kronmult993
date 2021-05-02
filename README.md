@@ -19,8 +19,8 @@ We implemented a basic and a batched version of the algorithm:
 #include <kronmult/kronmult.hpp>
 
 void kronmult(const int matrix_number, const int matrix_size, T const * const matrix_list[], const int matrix_stride,
-              T input[],
-              T output[], T workspace[])
+              T input[], const int size_input,
+              T workspace[], T transpose_workspace[])
 
 void kronmult_batched(const int matrix_number, const int matrix_size, T const * const matrix_list_batched[], const int matrix_stride,
                       T* input_batched[],
@@ -31,9 +31,10 @@ void kronmult_batched(const int matrix_number, const int matrix_size, T const * 
 They both compute `output += kron(matrix_list) * input`.
 
 - `matrix_list` is an array containing pointers to `matrix_number` square matrices of size `matrix_size` by `matrix_size` and stride `matrix_stride`
-- `input` is a `matrix_size`^`matrix_number` elements vector
-- `output` is a `matrix_size`^`matrix_number` elements vector, where the output will be stored
-- `workspace` is a `matrix_size`^`matrix_number` elements vector, to be used as workspace
+- `input` is a `size_input` = `matrix_size`^`matrix_number` elements vector
+- `output` is a `size_input` elements vector, where the output will be stored
+- `workspace` is a `size_input` elements vector, to be used as workspace
+- `transpose_workspace` is a `matrix_size`^2 elements vector, to be used as workspace
 
 In the batched version all inputs are replaced by arrays with one input for each of the `nb_batch` batch elements exept for `matrix_list_batched` which is an array of `nb_batch`*`matrix_number` pointers to square matrices.
 

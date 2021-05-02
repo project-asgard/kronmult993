@@ -79,7 +79,7 @@ void reduction_slice(T* intermediate_output_batched[], T output[], int first_bat
  * and reduce on them, one slice at a time
  */
 template<typename T>
-void reduction(int nb_batch, T* intermediate_output_batched[], T* output_batched[], int nb_elements)
+void openmp_reduction(int nb_batch, T* intermediate_output_batched[], T* output_batched[], int nb_elements)
 {
     int first_batch = 0;
     T* current_output = output_batched[0];
@@ -106,7 +106,7 @@ void reduction(int nb_batch, T* intermediate_output_batched[], T* output_batched
  * simplest version of the reduction, used to validate the other implementation
  */
 template<typename T>
-void reduction_naive(int nb_batch, T* intermediate_output_batched[], T* output_batched[], int nb_elements)
+void openmp_reduction_naive(int nb_batch, T* intermediate_output_batched[], T* output_batched[], int nb_elements)
 {
     for(int b = 0; b < nb_batch; b++)
     {
