@@ -1,6 +1,15 @@
 #pragma once
 
 /*
+ * converts row and col indices into a single index for a matrix store in col-major
+ * `stride` is usually the number of rows of the matrix
+ */
+inline int colmajor(const int row, const int col, const int stride)
+{
+    return row + col*stride;
+}
+
+/*
  * computes output = input^T
  *
  * `input` is a `matrix_size` by `matrix_size` square matrix of stride `input_stride`
@@ -11,8 +20,6 @@
 template<typename T>
 void transpose(const T input[], T output[], const int matrix_size, const int input_stride)
 {
-    #define colmajor(row, col, nb_rows) ((row) + (col) * (nb_rows))
-
     for(int r = 0; r < matrix_size; r++)
     {
         for(int c = 0; c < matrix_size; c++)
@@ -20,8 +27,6 @@ void transpose(const T input[], T output[], const int matrix_size, const int inp
             output[colmajor(r, c, matrix_size)] = input[colmajor(c, r, input_stride)];
         }
     }
-
-    #undef colmajor
 }
 
 /*
@@ -40,8 +45,6 @@ void multiply_transpose(const T X[], const int nb_col_X,
                                         const T M[], const int size_M, const int stride_M,
                                         T Y[], T M_transposed[])
 {
-    #define colmajor(row, col, nb_rows) ((row) + (col) * (nb_rows))
-
     // transpose the matrix to get a better alignement
     transpose(M, M_transposed, size_M, stride_M);
 
@@ -60,6 +63,4 @@ void multiply_transpose(const T X[], const int nb_col_X,
             Y[colmajor(colX,rowM,nb_col_X)] = dotprod;
         }
     }
-
-    #undef colmajor
 }

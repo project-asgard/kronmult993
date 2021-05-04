@@ -1,6 +1,5 @@
 #pragma once
 #include "linear_algebra.hpp"
-#include "reduction.hpp"
 
 /*
  * computes number^power for integers
@@ -14,8 +13,7 @@ int pow_int(const int number, const int power)
 }
 
 /*
- * Computes kron(matrix_list) * input
- * Returns a pointeur to an array containing the result (`workspace` if `matrix_number` is odd and `input` if it is even)
+ * Computes output += kron(matrix_list) * input
  *
  * `matrix_list` is an array containing pointers to `matrix_number` square matrices of size `matrix_size` by `matrix_size` and stride `matrix_stride`
  * `input` is a `size_input`=`matrix_size`^`matrix_number` elements vector
@@ -28,8 +26,9 @@ int pow_int(const int number, const int power)
  * the matrices should be stored in col-major order
  */
 template<typename T>
-T* kronmult(const int matrix_number, const int matrix_size, T const * const matrix_list[], const int matrix_stride,
+void kronmult(const int matrix_number, const int matrix_size, T const * const matrix_list[], const int matrix_stride,
             T input[], const int size_input,
+            T output[],
             T workspace[], T transpose_workspace[])
 {
     // how many column should `input` have for the multiplications to be legal
@@ -47,7 +46,12 @@ T* kronmult(const int matrix_number, const int matrix_size, T const * const matr
         std::swap(input, workspace);
     }
 
-    return input;
+    // reduce in a threadsafe way
+    for(int i = 0; i < size_input; i++)
+    {
+        #pragma omp atomic
+        output[i] += input[i];
+    }
 }
 
 /*
@@ -84,15 +88,12 @@ void kronmult_batched(const int matrix_number, const int matrix_size, T const * 
             // computes kronmult
             T const * const * matrix_list = &matrix_list_batched[i*matrix_number];
             T* input = input_batched[i];
+            T* output = output_batched[i];
             T* workspace = workspace_batched[i];
             // result is stored in `workspace` if `matrix_number` is odd and `input` if it is even
-            kronmult<T>(matrix_number, matrix_size, matrix_list, matrix_stride, input, size_input, workspace, transpose_workspace);
+            kronmult<T>(matrix_number, matrix_size, matrix_list, matrix_stride, input, size_input, output, workspace, transpose_workspace);
         }
 
         delete[] transpose_workspace;
     }
-
-    // adds the results to the outputs in a threadsafe way
-    T** intermediate_output_batched = (matrix_number % 2 == 0) ? input_batched : workspace_batched;
-    reduction<T>(nb_batch, intermediate_output_batched , output_batched, size_input);
 }

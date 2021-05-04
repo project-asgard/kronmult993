@@ -37,7 +37,6 @@ set(KRONSRC
         # openMP
         kronmult/openmp/kronmult.hpp
         kronmult/openmp/linear_algebra.hpp
-        kronmult/openmp/reduction.hpp
         # GPU
         kronmult/gpu/kronmult.hpp
         kronmult/gpu/gpu_operations.hpp)
