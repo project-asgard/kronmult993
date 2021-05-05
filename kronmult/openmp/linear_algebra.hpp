@@ -82,16 +82,16 @@ void multiply_transpose_blas(const T X[], const int nb_col_X,
     int ldc = nb_col_X; // why size_M vector horizontal, and not nb_col_X vector vertical?
     if(DEBUG){
     std::cerr <<
-        "transa(" << transa << ") " 
-       << " transb(" << transb << ") " 
-       << " m(" << m << ") " 
-       << " n(" << n << ") " 
-       << " k(" << k << ") " 
-       << " alpha("  << one << ") " 
-       << " lda(" << lda << ") " 
-       << " ldb(" << ldb << ") " 
-       << " beta(" <<zero << ") " 
-       << " ldc(" << ldc << ") " 
+        "transa(" << transa << ") "
+       << " transb(" << transb << ") "
+       << " m(" << m << ") "
+       << " n(" << n << ") "
+       << " k(" << k << ") "
+       << " alpha("  << one << ") "
+       << " lda(" << lda << ") "
+       << " ldb(" << ldb << ") "
+       << " beta(" <<zero << ") "
+       << " ldc(" << ldc << ") "
         << std::endl;
     }
 #define TONONCONST(X) ((T*)(size_t)(X))
