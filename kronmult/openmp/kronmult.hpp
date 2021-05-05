@@ -39,7 +39,8 @@ void kronmult(const int matrix_number, const int matrix_size, T const * const ma
     {
         // takes `matrix` into account and put the result in `workspace` (use `output` as a workspace if needed)
         T const * const matrix = matrix_list[i];
-        multiply_transpose<T>(input, nb_col_input, matrix, matrix_size, matrix_stride, workspace, transpose_workspace);
+        //multiply_transpose<T>(input, nb_col_input, matrix, matrix_size, matrix_stride, workspace, transpose_workspace);
+        multiply_transpose_blas<T>( std::as_const(input), nb_col_input, std::as_const(matrix), matrix_size, matrix_stride, workspace);
         // swap `input` and `workspace` such that `input` contains once again the input
         // note that, while they have the same size flattened, the shape (nb_columns and nb_rows) of `input` and `workspace` are different
         // this is on purpose and equivalent to a reshape operation that is actually needed by the algorithm
