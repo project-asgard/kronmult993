@@ -36,7 +36,7 @@ They both compute `output += kron(matrix_list) * input`.
 - `workspace` is a `size_input` elements vector, to be used as workspace
 - `transpose_workspace` is a `matrix_size`^2 elements vector, to be used as workspace
 
-In the batched version all inputs are replaced by arrays with one input for each of the `nb_batch` batch elements exept for `matrix_list_batched` which is an array of `nb_batch`*`matrix_number` pointers to square matrices.
+In the batched version all inputs are replaced by arrays with one input for each of the `nb_batch` batch elements except for `matrix_list_batched` which is an array of `nb_batch`*`matrix_number` pointers to square matrices.
 
 **WARNINGS**:
 

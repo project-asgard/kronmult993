@@ -1,4 +1,5 @@
 #pragma once
+#define CHECK(X) if (X != 0) {cerr << "Error in BLAS GEMM call"<< endl; exit(-1);}
 const bool DEBUG = false;
 /*
  * converts row and col indices into a single index for a matrix store in col-major
@@ -30,10 +31,13 @@ void transpose(const T input[], T output[], const int matrix_size, const int inp
 }
 
 // BLAS function header: call to mkl, lapack, magma or others.
+// Col-Major by default.
 extern "C"
 {
-    // matric multiplication
+    // matrix multiplication
+    //double precision: fp64
     int dgemm_(char *transa, char *transb, int *m, int *n, int *k, double *alpha, double *A, int *lda, double *B, int *ldb, double *beta, double *C, int *ldc);
+    //single precision: fp32
     int sgemm_(char *transa, char *transb, int *m, int *n, int *k, float *alpha, float *A, int *lda, float *B, int *ldb, float *beta, float *C, int *ldc);
 }
 
@@ -57,29 +61,31 @@ void multiply_transpose_blas(const T X[], const int nb_col_X,
     // Even if we compute
     // Y = X^T * M^T
     // when filling, m,n,k, lda,ldb, and ldc,
-    // we must consider the original product: Y = M * X
+    // we must consider the original product: Y = M * X (BLAS philosophy)
 
     // C = alpha*A*B + beta * C
     // C (m,n), A (m,k), B (k,n)
+    // C<>Y A<>X B<>M
     // Y (nbCol,sizeM), X (sizeM,nbCol), M (sizeM,sizeM)
     // m == nbCol
     // n == size_M
     // k == size_M
-    // <--> C<>Y  A<>X B<M>
-    // Y = X^T * M^T
     char transa = 'T'; 
     char transb = 'T';
     int m = nb_col_X;
     int n = size_M;
     int k = size_M;
     T one = 1.;
-    const T *A = X;
-    int lda = size_M;
-    const T *B = M;
-    int ldb = stride_M;
     T zero = 0.0;
+#define tononconst(X) ((T*)(size_t)(X))
+    T *A = tononconst(X);
+    T *B = tononconst(M);
+#undef tononconst
     T *C = Y;
-    int ldc = nb_col_X; // why size_M vector horizontal, and not nb_col_X vector vertical?
+    /* lda/b/c are given by number of lines (ColMajor) */
+    int lda = size_M; // X(<>A) is a size_M by nb_col_X matrix
+    int ldb = stride_M; // M(<>B) is a size_M by size_M matrix
+    int ldc = nb_col_X; // Y(<>C) is a nb_col_X by size_M matrix
     if(DEBUG){
     std::cerr <<
         "transa(" << transa << ") "
@@ -94,12 +100,13 @@ void multiply_transpose_blas(const T X[], const int nb_col_X,
        << " ldc(" << ldc << ") "
         << std::endl;
     }
-#define TONONCONST(X) ((T*)(size_t)(X))
+    int res = 0;
     static constexpr bool value = std::is_same<T, float>::value;
     if constexpr (value)
-        int res = sgemm_(&transa, &transb, &m, &n, &k, &one, TONONCONST(A), &lda, TONONCONST(B), &ldb, &zero, C, &ldc);
+        res = sgemm_(&transa, &transb, &m, &n, &k, &one, A, &lda, B, &ldb, &zero, C, &ldc);
     else
-        int res = dgemm_(&transa, &transb, &m, &n, &k, &one,  TONONCONST(A), &lda, TONONCONST(B), &ldb, &zero, C, &ldc);
+        res = dgemm_(&transa, &transb, &m, &n, &k, &one, A, &lda, B, &ldb, &zero, C, &ldc);
+    CHECK(res);
 }
 
 /*
