@@ -1,6 +1,6 @@
 #pragma once
 #define CHECK(X) if (X != 0) {cerr << "Error in BLAS GEMM call"<< endl; exit(-1);}
-const bool DEBUG = false;
+
 /*
  * converts row and col indices into a single index for a matrix store in col-major
  * `stride` is usually the number of rows of the matrix
@@ -57,12 +57,15 @@ void multiply_transpose_blas(const T X[], const int nb_col_X,
                                         const T M[], const int size_M, const int stride_M,
                                         T Y[])
 {
-    //BLAS is in col MAJOR
-    // Even if we compute
-    // Y = X^T * M^T
-    // when filling, m,n,k, lda,ldb, and ldc,
-    // we must consider the original product: Y = M * X (BLAS philosophy)
+    std::cerr << "Error type not supported"<< std::endl;
+    exit(-1);
+}
 
+template<typename T>
+void multiply_transpose_blas_fillargs(int * res, char * transa, char * transb, int * m, int * n, int * k,
+        T * one, T * zero, int * lda, int * ldb, int * ldc, const int nb_col_X, const int size_M, const int stride_M,
+        T ** A, T ** B, T ** C, const T * X, const T * M, T * Y)
+{
     // C = alpha*A*B + beta * C
     // C (m,n), A (m,k), B (k,n)
     // C<>Y A<>X B<>M
@@ -70,42 +73,48 @@ void multiply_transpose_blas(const T X[], const int nb_col_X,
     // m == nbCol
     // n == size_M
     // k == size_M
-    char transa = 'T'; 
-    char transb = 'T';
-    int m = nb_col_X;
-    int n = size_M;
-    int k = size_M;
-    T one = 1.;
-    T zero = 0.0;
-#define tononconst(X) ((T*)(size_t)(X))
-    T *A = tononconst(X);
-    T *B = tononconst(M);
-#undef tononconst
-    T *C = Y;
+    *transa = 'T'; 
+    *transb = 'T';
+    *m = nb_col_X;
+    *n = size_M;
+    *k = size_M;
+    *one = static_cast<T>(1);
+    *zero = static_cast<T>(0.0);
     /* lda/b/c are given by number of lines (ColMajor) */
-    int lda = size_M; // X(<>A) is a size_M by nb_col_X matrix
-    int ldb = stride_M; // M(<>B) is a size_M by size_M matrix
-    int ldc = nb_col_X; // Y(<>C) is a nb_col_X by size_M matrix
-    if(DEBUG){
-    std::cerr <<
-        "transa(" << transa << ") "
-       << " transb(" << transb << ") "
-       << " m(" << m << ") "
-       << " n(" << n << ") "
-       << " k(" << k << ") "
-       << " alpha("  << one << ") "
-       << " lda(" << lda << ") "
-       << " ldb(" << ldb << ") "
-       << " beta(" <<zero << ") "
-       << " ldc(" << ldc << ") "
-        << std::endl;
-    }
-    int res = 0;
-    static constexpr bool value = std::is_same<T, float>::value;
-    if constexpr (value)
-        res = sgemm_(&transa, &transb, &m, &n, &k, &one, A, &lda, B, &ldb, &zero, C, &ldc);
-    else
-        res = dgemm_(&transa, &transb, &m, &n, &k, &one, A, &lda, B, &ldb, &zero, C, &ldc);
+    *lda = size_M; // X(<>A) is a size_M by nb_col_X matrix
+    *ldb = stride_M; // M(<>B) is a size_M by size_M matrix
+    *ldc = nb_col_X; // Y(<>C) is a nb_col_X by size_M matrix
+    *A = const_cast<T*>(X);
+    *B = const_cast<T*>(M);
+    *C = Y;
+    *res = 0;
+}
+
+template<>
+void multiply_transpose_blas<float>(const float X[], const int nb_col_X,
+                                        const float M[], const int size_M, const int stride_M,
+                                        float Y[])
+{
+    float *A, *B, *C, zero, one;
+    char transa, transb;
+    int m, n, k, lda, ldb, ldc, res;
+    multiply_transpose_blas_fillargs<float>(&res, &transa, &transb, &m, &n, &k, &one, &zero, &lda, &ldb,
+            &ldc, nb_col_X, size_M, stride_M, &A, &B, &C, X, M, Y);
+    res = sgemm_(&transa, &transb, &m, &n, &k, &one, A, &lda, B, &ldb, &zero, C, &ldc);
+    CHECK(res);
+}
+
+template<>
+void multiply_transpose_blas<double>(const double X[], const int nb_col_X,
+                                        const double M[], const int size_M, const int stride_M,
+                                        double Y[])
+{
+    double *A, *B, *C, zero, one;
+    char transa, transb;
+    int m, n, k, lda, ldb, ldc, res;
+    multiply_transpose_blas_fillargs<double>(&res, &transa, &transb, &m, &n, &k, &one, &zero, &lda, &ldb,
+            &ldc, nb_col_X, size_M, stride_M, &A, &B, &C, X, M, Y);
+    res = dgemm_(&transa, &transb, &m, &n, &k, &one, A, &lda, B, &ldb, &zero, C, &ldc);
     CHECK(res);
 }
 
