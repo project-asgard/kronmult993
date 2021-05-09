@@ -19,5 +19,6 @@ endif ()
 
 include(CTest)
 enable_testing ()
-add_subdirectory(kronmult)
+add_subdirectory(algo-993/kronmult)
+add_subdirectory(algo-orig/kronmult)
 add_subdirectory(tests)

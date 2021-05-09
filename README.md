@@ -5,6 +5,10 @@ This library implements `kronmult(matrix_list, vector)`, which is the matrix pro
 It is fine-tuned for the needs of [ASGarD](https://github.com/project-asgard/asgard).
 In particular, we expect our inputs to be *col-major* square matrices.
 
+2 algorithms are implemented for comparison: 
+- Origin algo;
+- algo 993, which is described here.
+
 # Theory
 
 We implement a variant of the backward version of algorithm 993 ([Algorithm 993: Efficient Computation with Kronecker Products](https://dl.acm.org/doi/abs/10.1145/3291041)), chosen to perform well on col-major matrices.
