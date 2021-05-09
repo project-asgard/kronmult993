@@ -14,8 +14,8 @@
 
 #endif
 
-#include "../kronmult/kgemm/kgemm_nt_batched.hpp"
-#include "../kronmult/kroncommon.hpp"
+#include "../algo-origin/kronmult/kgemm/kgemm_nt_batched.hpp"
+#include "../algo-origin/kronmult/kroncommon.hpp"
 
 static inline void host2gpu(void *dest, void *src, size_t nbytes)
 {

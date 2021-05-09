@@ -41,7 +41,7 @@ GLOBAL_FUNCTION void kronmult2_xbatched(int const n, T const *const Aarray_[], i
     auto Aarray = [=](int const i1, int const i2) -> T const * { return (Aarray_[indx2f(i1, i2, ndim)]); };
 
 #ifndef USE_GPU
-    #pragma omp parallel for
+    #pragma omp parallel foAarray_[r
 #endif
     for (int ibatch = iz_start; ibatch <= batchCount; ibatch += iz_size)
     {

@@ -3,13 +3,13 @@
 #include <iostream>
 #include <unistd.h>
 
-#include "../kronmult/kroncommon.hpp"
-#include "../kronmult/xbatched/kronmult1_xbatched.hpp"
-#include "../kronmult/xbatched/kronmult2_xbatched.hpp"
-#include "../kronmult/xbatched/kronmult3_xbatched.hpp"
-#include "../kronmult/xbatched/kronmult4_xbatched.hpp"
-#include "../kronmult/xbatched/kronmult5_xbatched.hpp"
-#include "../kronmult/xbatched/kronmult6_xbatched.hpp"
+#include "../algo-origin/kronmult/kroncommon.hpp"
+#include "../algo-origin/kronmult/xbatched/kronmult1_xbatched.hpp"
+#include "../algo-origin/kronmult/xbatched/kronmult2_xbatched.hpp"
+#include "../algo-origin/kronmult/xbatched/kronmult3_xbatched.hpp"
+#include "../algo-origin/kronmult/xbatched/kronmult4_xbatched.hpp"
+#include "../algo-origin/kronmult/xbatched/kronmult5_xbatched.hpp"
+#include "../algo-origin/kronmult/xbatched/kronmult6_xbatched.hpp"
 
 #ifdef USE_GPU
     #include <cuda_runtime.h>

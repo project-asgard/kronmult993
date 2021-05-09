@@ -2,6 +2,7 @@
 #include <malloc.h>
 #include <random>
 
+#include "../algo-origin/kronmult/xbatched/xbatched.hpp"
 #include <iomanip>
 #include <kronmult_openmp.hpp>
 #include <openmp/kronmult.hpp>
@@ -129,12 +130,88 @@ int main(int ac, char * av[]){
                                                       workspace_batched, batch_count);
                 }
                 auto stop = std::chrono::high_resolution_clock::now();
+                auto start_origin = std::chrono::high_resolution_clock::now();
+                auto stop_origin = std::chrono::high_resolution_clock::now();
+                switch(dimensions)
+                {
+                case 1: {
+                    start_origin = std::chrono::high_resolution_clock::now();
+                    for (int j = 0; j < TOTAL_ITERATIONS; j++)
+                    {
+                        kronmult1_xbatched<double>(matrix_size, matrix_list_batched, matrix_stride,
+                                                   output_batched, input_batched, workspace_batched,
+                                                   batch_count);
+                    }
+                    stop_origin = std::chrono::high_resolution_clock::now();
+                    break;
+                }
+                case 2: {
+                    start_origin = std::chrono::high_resolution_clock::now();
+                    for (int j = 0; j < TOTAL_ITERATIONS; j++)
+                    {
+                        kronmult2_xbatched<double>(matrix_size, matrix_list_batched, matrix_stride,
+                                                   output_batched, input_batched, workspace_batched,
+                                                   batch_count);
+                    }
+                    stop_origin = std::chrono::high_resolution_clock::now();
+                    break;
+                }
+                case 3: {
+                    start_origin = std::chrono::high_resolution_clock::now();
+                    for (int j = 0; j < TOTAL_ITERATIONS; j++)
+                    {
+                        kronmult3_xbatched<double>(matrix_size, matrix_list_batched, matrix_stride,
+                                                   output_batched, input_batched, workspace_batched,
+                                                   batch_count);
+                    }
+                    stop_origin = std::chrono::high_resolution_clock::now();
+                    break;
+                }
+                case 4: {
+                    start_origin = std::chrono::high_resolution_clock::now();
+                    for (int j = 0; j < TOTAL_ITERATIONS; j++)
+                    {
+                        kronmult4_xbatched<double>(matrix_size, matrix_list_batched, matrix_stride,
+                                                   output_batched, input_batched, workspace_batched,
+                                                   batch_count);
+                    }
+                    stop_origin = std::chrono::high_resolution_clock::now();
+                    break;
+                }
+                case 5: {
+                    start_origin = std::chrono::high_resolution_clock::now();
+                    for (int j = 0; j < TOTAL_ITERATIONS; j++)
+                    {
+                        kronmult5_xbatched<double>(matrix_size, matrix_list_batched, matrix_stride,
+                                                   output_batched, input_batched, workspace_batched,
+                                                   batch_count);
+                    }
+                    stop_origin = std::chrono::high_resolution_clock::now();
+                    break;
+                }
+                case 6: {
+                    start_origin = std::chrono::high_resolution_clock::now();
+                    for (int j = 0; j < TOTAL_ITERATIONS; j++)
+                    {
+                        kronmult6_xbatched<double>(matrix_size, matrix_list_batched, matrix_stride,
+                                                   output_batched, input_batched, workspace_batched,
+                                                   batch_count);
+                    }
+                    stop_origin = std::chrono::high_resolution_clock::now();
+                    break;
+                }
+                default:
+                    exit(-1);
+
+                }
                 // TODO: plot time/FLOPS
                 double flops = std::pow(kronmult_openmp::pow_long(degree, dimensions), 3.) * batch_count * TOTAL_ITERATIONS;
                 double real_flops = std::pow(degree, dimensions)* std::pow(degree,2) * batch_count * TOTAL_ITERATIONS;
                 double orig_flops = 12.*std::pow(degree, dimensions+1) * batch_count * TOTAL_ITERATIONS;
                 std::chrono::duration<double> diff = stop-start;
-                std::cout << "Time: " << diff.count() << std::endl;
+                std::chrono::duration<double> diff_origin = stop_origin-start_origin;
+                std::cout << "Time 993: " << diff.count() << std::endl;
+                std::cout << "Time Origin: " << diff_origin.count() << std::endl;
                 std::cout << "Theoretical Flops/sec: " << flops/diff.count() << std::endl;
                 std::cout << "Real Flops/sec: " << real_flops/diff.count() << std::endl;
                 std::cout << "Orig Flops/sec: " << orig_flops/diff.count() << std::endl;
