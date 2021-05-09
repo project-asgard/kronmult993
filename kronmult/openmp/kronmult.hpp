@@ -37,7 +37,7 @@ int pow_int(const int number, const int power)
  * the matrices should be stored in col-major order
  */
 template<typename T>
-void kronmult(const int matrix_number, const int matrix_size, T const * const matrix_list[], const int matrix_stride,
+void kronmult(const int matrix_count, const int matrix_size, T const * const matrix_list[], const int matrix_stride,
             T input[], const int size_input,
             T output[],
             T workspace[], T transpose_workspace[])
@@ -46,7 +46,7 @@ void kronmult(const int matrix_number, const int matrix_size, T const * const ma
     const int nb_col_input = size_input / matrix_size;
 
     // iterates on the matrices from the last to the one just before first
-    for(int i = matrix_number-1; i >= 0; i--)
+    for(int i = matrix_count-1; i >= 0; i--)
     {
         // takes `matrix` into account and put the result in `workspace` (use `output` as a workspace if needed)
         T const * const matrix = matrix_list[i];
@@ -73,23 +73,23 @@ void kronmult(const int matrix_number, const int matrix_size, T const * const ma
 /*
  * Computes output[K] += kron(matrix_list[K]) * input[K] for 0 <= k < batchCount
  *
- * `matrix_list_batched` is an array of `nb_batch`*`matrix_number` pointers to square matrices of size `matrix_size` by `matrix_size` and stride `matrix_stride`
- * `input_batched` is an array of `nb_batch` vectors of size `matrix_size`^`matrix_number`
- * `output_batched` is an array of `nb_batch` vectors of size `matrix_size`^`matrix_number`, where the outputs will be stored
- * `workspace` is an array of `nb_batch` vectors of size `matrix_size`^`matrix_number`, to be used as workspaces
+ * `matrix_list_batched` is an array of `nb_batch`*`matrix_count` pointers to square matrices of size `matrix_size` by `matrix_size` and stride `matrix_stride`
+ * `input_batched` is an array of `nb_batch` vectors of size `matrix_size`^`matrix_count`
+ * `output_batched` is an array of `nb_batch` vectors of size `matrix_size`^`matrix_count`, where the outputs will be stored
+ * `workspace` is an array of `nb_batch` vectors of size `matrix_size`^`matrix_count`, to be used as workspaces
  *
  * WARNINGS:
  * `input_batched` and `workspace_batched` will be used as temporary workspaces and thus modified
  * the matrices should be stored in col-major order
  */
 template<typename T>
-void kronmult_batched(const int matrix_number, const int matrix_size, T const * const matrix_list_batched[], const int matrix_stride,
+void kronmult_batched(const int matrix_count, const int matrix_size, T const * const matrix_list_batched[], const int matrix_stride,
                       T* input_batched[],
                       T* output_batched[], T* workspace_batched[],
                       const int nb_batch)
 {
     // numbers of elements in the input vector
-    int size_input = pow_int(matrix_size, matrix_number);
+    int size_input = pow_int(matrix_size, matrix_count);
 
     // runs kronmult one batch at a time
     #pragma omp parallel
@@ -102,12 +102,12 @@ void kronmult_batched(const int matrix_number, const int matrix_size, T const * 
         for(int i=0; i < nb_batch; i++)
         {
             // computes kronmult
-            T const * const * matrix_list = &matrix_list_batched[i*matrix_number];
+            T const * const * matrix_list = &matrix_list_batched[i*matrix_count];
             T* input = input_batched[i];
             T* output = output_batched[i];
             T* workspace = workspace_batched[i];
-            // result is stored in `workspace` if `matrix_number` is odd and `input` if it is even
-            kronmult<T>(matrix_number, matrix_size, matrix_list, matrix_stride, input, size_input, output, workspace, transpose_workspace);
+            // result is stored in `workspace` if `matrix_count` is odd and `input` if it is even
+            kronmult<T>(matrix_count, matrix_size, matrix_list, matrix_stride, input, size_input, output, workspace, transpose_workspace);
         }
 
         delete[] transpose_workspace;

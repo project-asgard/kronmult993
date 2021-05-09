@@ -46,9 +46,9 @@ int main(int ac, char * av[]){
      * batch_count == degree * pow(2, level*dimension)
      * size_input == pow(degree, dimension)
      * */
-    for(size_t degree = 2; degree <=8; degree++){
-        for(size_t dimensions = 1; dimensions <=6; dimensions++){
-            for(size_t grid_level = 2; grid_level <= 7; grid_level++){
+    for(size_t dimensions = 1; dimensions <=6; dimensions++){
+        for(size_t grid_level = 2; grid_level <= 4; grid_level++){
+            for(size_t degree = 2; degree <=8; degree++){
 
                 size_t batch_count = degree * kronmult_openmp::pow_long(2, grid_level*dimensions);
                 size_t matrix_size = degree;
@@ -65,9 +65,9 @@ int main(int ac, char * av[]){
                     << " batch count: " << batch_count
                     << std::endl;
 #endif
-                double ** matrix_list = (double **) malloc(sizeof(double *) * batch_count);
-                if(NULL == matrix_list){
-                    free(matrix_list);
+                double ** matrix_list_batched = (double **) malloc(sizeof(double *) * batch_count * matrix_count);
+                if(NULL == matrix_list_batched){
+                    free(matrix_list_batched);
                     std::cerr << "Dynamic allocation failed." << std::endl;
                     std::cerr
                         << "Square Matrix Size (skinny) == Degree: " << degree
@@ -79,30 +79,55 @@ int main(int ac, char * av[]){
                         << std::endl;
                     continue;
                 }
-                for(int i=0; i< matrix_count; i++)
-                {
-                    double *square_matrix = (double *)malloc(sizeof(double) * matrix_size * matrix_size);
-                    random_init(square_matrix, matrix_size, matrix_size, matrix_size);
-                    matrix_list[i] = square_matrix;
+                double ** input_batched;// vector of solution before this explicit time advance time step
+                double ** output_batched; // vector of solution after this explicit time advance time step
+                double ** workspace_batched; // mandatory for local computation
+                input_batched = (double **) malloc(sizeof(double) * batch_count);
+                output_batched = (double **) malloc(sizeof(double) * batch_count);
+                workspace_batched = (double **) malloc(sizeof(double) * batch_count);
+                if(NULL == input_batched
+                   || NULL == output_batched
+                   || NULL == workspace_batched){
+                    free(input_batched);
+                    free(output_batched);
+                    free(workspace_batched);
+                    std::cerr << "Dynamic allocation failed." << std::endl;
+                    std::cerr
+                        << "Square Matrix Size (skinny) == Degree: " << degree
+                        << " Tall matrix size == size input: " << size_input
+                        << " Coefficient matrix stride: " << matrix_stride
+                        << " Matrix count in kronmult == Dimensions: " << dimensions
+                        << " grid level: " << grid_level
+                        << " batch count: " << batch_count
+                        << std::endl;
+                    continue;
                 }
-                double * input;// vector of solution before this explicit time advance time step
-                double * output; // vector of solution after this explicit time advance time step
-                double * workspace; // mandatory for local computation
-                double * transpose_workspace; // same
-                input = (double *) malloc(sizeof(double) * size_input);
-                random_init(input, size_input, 1, size_input); // tensor matrix_size ^ matrix_number
-                output = (double *) malloc(sizeof(double) * size_input);
-                value_init(output, size_input, 1, size_input, 0.); // tensor
-                workspace = (double *) malloc(sizeof(double) * size_input);
-                value_init(workspace, size_input, 1, size_input, 0.); // tensor
-                transpose_workspace = (double *) malloc(sizeof(double) * matrix_size * matrix_size );
-                value_init(transpose_workspace, matrix_size, matrix_size, matrix_size, 0.); // tensor
+                for(int batchid = 0; batchid< batch_count; batchid++)
+                {
+                    for(int matrix_count_index = 0; matrix_count_index < matrix_count; matrix_count_index++)
+                    {
+                        double *square_matrix = (double *)malloc(sizeof(double) * matrix_size * matrix_size);
+                        random_init(square_matrix, matrix_size, matrix_size, matrix_size);
+                        matrix_list_batched[batchid * matrix_count + matrix_count_index] = square_matrix;
+                    }
+                    input_batched[batchid] = (double*) malloc(sizeof(double) * size_input);
+                    random_init(input_batched[batchid], size_input, 1, size_input); // tensor matrix_size ^ matrix_number
+                    output_batched[batchid] = (double*) malloc(sizeof(double) * size_input);
+                    value_init<double>(output_batched[batchid], size_input, 1, size_input, 0.); // tensor
+                    workspace_batched[batchid] = (double*) malloc(sizeof(double) * size_input);
+                    value_init<double>(workspace_batched[batchid], size_input, 1, size_input, 0.); // tensor
+                }
                 // TODO if clock too small, add a loop to make several time the same execution
                 // TODO Maybe on different data so that there is no cache reuse effect
                 auto start = std::chrono::high_resolution_clock::now();
                 for(int j=0; j< TOTAL_ITERATIONS; j++)
-                    kronmult_openmp::kronmult(matrix_count, matrix_size, matrix_list, matrix_stride, input,
-                                          size_input, output, workspace, transpose_workspace);
+                {
+                    // kronmult_openmp::kronmult(matrix_count, matrix_size, matrix_list, matrix_stride, input,
+                    //                      size_input, output, workspace, transpose_workspace);
+                    kronmult_openmp::kronmult_batched(matrix_count, matrix_size, matrix_list_batched,
+                                                      matrix_stride, input_batched, output_batched,
+                                                      workspace_batched, batch_count);
+                }
                 auto stop = std::chrono::high_resolution_clock::now();
                 // TODO: plot time/FLOPS
                 double flops = std::pow(kronmult_openmp::pow_long(degree, dimensions), 3.) * batch_count * TOTAL_ITERATIONS;
@@ -113,15 +138,17 @@ int main(int ac, char * av[]){
                 std::cout << "Theoretical Flops/sec: " << flops/diff.count() << std::endl;
                 std::cout << "Real Flops/sec: " << real_flops/diff.count() << std::endl;
                 std::cout << "Orig Flops/sec: " << orig_flops/diff.count() << std::endl;
-                free(input);
-                free(output);
-                free(workspace);
-                free(transpose_workspace);
                 for(int i=0; i< matrix_count; i++)
                 {
-                    free(matrix_list[i]);
+                    free(input_batched[i]);
+                    free(output_batched[i]);
+                    free(workspace_batched[i]);
+                    free(matrix_list_batched[i]);
                 }
-                free(matrix_list);
+                free(matrix_list_batched);
+                free(output_batched);
+                free(workspace_batched);
+                //free(matrix_list_batched);
             }
 
         }
