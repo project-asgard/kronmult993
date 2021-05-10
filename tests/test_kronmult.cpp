@@ -1,4 +1,5 @@
 #include <chrono>
+#include "utility"
 #include <malloc.h>
 #include <random>
 
@@ -6,7 +7,6 @@
 #include <iomanip>
 #include <kronmult_openmp.hpp>
 #include <openmp/kronmult.hpp>
-#define  DEBUG 1
 static constexpr size_t TOTAL_ITERATIONS = 10;
 
 template<typename  T>
@@ -52,7 +52,7 @@ void display_debug(size_t degree, size_t size_input, size_t matrix_stride, size_
 }
 
 template<typename T>
-void test_kronmult(size_t degree, size_t size_input, size_t matrix_stride, size_t dimensions,
+std::pair<double, double> test_kronmult(size_t degree, size_t size_input, size_t matrix_stride, size_t dimensions,
                    size_t grid_level, size_t batch_count, size_t matrix_count, size_t matrix_size)
 {
     T ** matrix_list_batched; // list of batched matrix lists(kronmult)
@@ -63,19 +63,18 @@ void test_kronmult(size_t degree, size_t size_input, size_t matrix_stride, size_
     input_batched = (T **) malloc(sizeof(T*) * batch_count);
     output_batched = (T **) malloc(sizeof(T*) * batch_count);
     workspace_batched = (T **) malloc(sizeof(T*) * batch_count);
-
-    display_debug(degree, size_input, matrix_stride, dimensions, grid_level, batch_count);
     if(NULL == matrix_list_batched
        || NULL == input_batched
        || NULL == output_batched
        || NULL == workspace_batched)
     {
+        display_debug(degree, size_input, matrix_stride, dimensions, grid_level, batch_count);
         free(input_batched);
         free(output_batched);
         free(workspace_batched);
         free(matrix_list_batched);
         std::cerr << "Dynamic allocation failed." << std::endl;
-        return;
+        return std::make_pair(0.,0.);
     }
     for(int batchid = 0; batchid< batch_count; batchid++)
     {
@@ -184,11 +183,13 @@ void test_kronmult(size_t degree, size_t size_input, size_t matrix_stride, size_
     T orig_flops = 12.*std::pow(degree, dimensions+1) * batch_count * TOTAL_ITERATIONS;
     std::chrono::duration<T> diff = stop-start;
     std::chrono::duration<T> diff_origin = stop_origin-start_origin;
+#ifdef DEBUG
     std::cerr << "Time 993: " << diff.count() << std::endl;
     std::cerr << "Time Origin: " << diff_origin.count() << std::endl;
     std::cerr << "Theoretical Flops/sec: " << flops/diff.count() << std::endl;
     std::cerr << "Real Flops/sec: " << real_flops/diff.count() << std::endl;
     std::cerr << "Orig Flops/sec: " << orig_flops/diff.count() << std::endl;
+#endif
     for(int i=0; i< matrix_count; i++)
     {
         free(input_batched[i]);
@@ -199,7 +200,8 @@ void test_kronmult(size_t degree, size_t size_input, size_t matrix_stride, size_
     free(matrix_list_batched);
     free(output_batched);
     free(workspace_batched);
-//free(matrix_list_batched);
+    std::pair<double,double> result = {diff.count(), diff_origin.count()};
+    return result;
 }
 
 int main(int ac, char * av[]){
@@ -231,26 +233,28 @@ std:cerr << "degree" << ","
                 size_t matrix_count = dimensions;
                 size_t matrix_stride = matrix_size;// TODO: What does it represents in Asgard?
                 int double_precision = 1;
-                test_kronmult<double>(degree, size_input, matrix_stride, dimensions, grid_level, batch_count,
+                auto perf = test_kronmult<double>(degree, size_input, matrix_stride, dimensions, grid_level, batch_count,
                                       matrix_count, matrix_size);
-                std:cerr << degree << ","
+                std::cerr << degree << ","
                         << grid_level << ","
                         << dimensions << ","
                         << batch_count << ","
                         << double_precision << ","
                         << size_input << ","
-                        << perf
+                        << perf.first << ","
+                         << perf.second
                         << std::endl;
                 double_precision = 0;
-                test_kronmult<float>(degree, size_input, matrix_stride, dimensions, grid_level, batch_count,
+                perf = test_kronmult<float>(degree, size_input, matrix_stride, dimensions, grid_level, batch_count,
                                      matrix_count, matrix_size);
-                std:cerr << degree << ","
+                std::cerr << degree << ","
                         << grid_level << ","
                         << dimensions << ","
                         << batch_count << ","
                         << double_precision << ","
                         << size_input << ","
-                        << perf
+                        << perf.first << ","
+                         << perf.second
                         << std::endl;
             }
 
