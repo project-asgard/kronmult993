@@ -211,24 +211,47 @@ int main(int ac, char * av[]){
      * batch_count == degree * pow(2, level*dimension)
      * size_input == pow(degree, dimension)
      * */
+std:cerr << "degree" << ","
+        << "grid_level" << ","
+        << "dimensions" << ","
+        << "batch_count" << ","
+        << "double_precision" << ","
+        << "size_input" << ","
+        << "perf"
+        << std::endl;
     for(size_t dimensions = 2; dimensions <=6; dimensions++)
     {
         for(size_t grid_level = 2; grid_level <= 4; grid_level++)
         {
             for(size_t degree = 2; degree <=8; degree++)
             {
-
                 size_t batch_count = degree * kronmult_openmp::pow_long(2, grid_level*dimensions);
                 size_t matrix_size = degree;
                 size_t size_input = kronmult_openmp::pow_int(degree, dimensions);
                 size_t matrix_count = dimensions;
                 size_t matrix_stride = matrix_size;// TODO: What does it represents in Asgard?
-                std::cerr << "Double precision" << std::endl;
+                int double_precision = 1;
                 test_kronmult<double>(degree, size_input, matrix_stride, dimensions, grid_level, batch_count,
                                       matrix_count, matrix_size);
-                std::cerr << "Single precision" << std::endl;
+                std:cerr << degree << ","
+                        << grid_level << ","
+                        << dimensions << ","
+                        << batch_count << ","
+                        << double_precision << ","
+                        << size_input << ","
+                        << perf
+                        << std::endl;
+                double_precision = 0;
                 test_kronmult<float>(degree, size_input, matrix_stride, dimensions, grid_level, batch_count,
                                      matrix_count, matrix_size);
+                std:cerr << degree << ","
+                        << grid_level << ","
+                        << dimensions << ","
+                        << batch_count << ","
+                        << double_precision << ","
+                        << size_input << ","
+                        << perf
+                        << std::endl;
             }
 
         }
