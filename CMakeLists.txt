@@ -17,6 +17,8 @@ else ()
     project(kronmult LANGUAGES CXX)
 endif ()
 
+find_package(BLAS)
+
 include(CTest)
 enable_testing ()
 add_subdirectory(algo-993/kronmult)

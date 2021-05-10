@@ -87,7 +87,7 @@ template<typename T>
 void kronmult_batched(const int matrix_count, const int matrix_size, T const * const matrix_list_batched[], const int matrix_stride,
                       T* input_batched[],
                       T* output_batched[], T* workspace_batched[],
-                      const int nb_batch)
+                      const size_t batch_count)
 {
     // numbers of elements in the input vector
     int size_input = pow_int(matrix_size, matrix_count);
@@ -100,7 +100,7 @@ void kronmult_batched(const int matrix_count, const int matrix_size, T const * c
         T* transpose_workspace = new T[matrix_size*matrix_size];
 
         #pragma omp for
-        for(int i=0; i < nb_batch; i++)
+        for(size_t i=0; i < batch_count; i++)
         {
             // computes kronmult
             T const * const * matrix_list = &matrix_list_batched[i*matrix_count];
