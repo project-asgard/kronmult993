@@ -7,7 +7,7 @@
 #include <iomanip>
 #include <kronmult_openmp.hpp>
 #include <openmp/kronmult.hpp>
-static constexpr size_t TOTAL_ITERATIONS = 10;
+static constexpr size_t TOTAL_ITERATIONS = 1;
 
 template<typename  T>
 void random_init(T X[], int nb_row_X, int nb_col_X, int stride)
@@ -219,8 +219,9 @@ std:cerr << "degree" << ","
         << "batch_count" << ","
         << "double_precision" << ","
         << "size_input" << ","
-        << "perf"
-        << std::endl;
+        << "perf_993" << ","
+        << "perf_origin"
+    << std::endl;
     for(size_t dimensions = 2; dimensions <=6; dimensions++)
     {
         for(size_t grid_level = 2; grid_level <= 4; grid_level++)
