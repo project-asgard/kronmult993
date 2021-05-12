@@ -1,5 +1,8 @@
 set(CMAKE_CXX_STANDARD 17)
 
+# compilation flags
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O3 -march=native")
+
 # define adds OpenMP flags
 find_package(OpenMP)
 if (OpenMP_CXX_FOUND)

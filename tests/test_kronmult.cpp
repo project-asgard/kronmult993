@@ -64,7 +64,7 @@ int main(int ac, char * av[]){
                     << " batch count: " << batch_count
                     << std::endl;
                 #endif
-                double ** matrix_list_batched = (double **) malloc(sizeof(double *) * batch_count * matrix_count);
+                double ** matrix_list_batched = (double **) malloc(sizeof(double*) * batch_count * matrix_count);
                 if(NULL == matrix_list_batched){
                     free(matrix_list_batched);
                     std::cerr << "Dynamic allocation failed." << std::endl;
@@ -81,9 +81,9 @@ int main(int ac, char * av[]){
                 double ** input_batched;// vector of solution before this explicit time advance time step
                 double ** output_batched; // vector of solution after this explicit time advance time step
                 double ** workspace_batched; // mandatory for local computation
-                input_batched = (double **) malloc(sizeof(double) * batch_count);
-                output_batched = (double **) malloc(sizeof(double) * batch_count);
-                workspace_batched = (double **) malloc(sizeof(double) * batch_count);
+                input_batched = (double **) malloc(sizeof(double*) * batch_count);
+                output_batched = (double **) malloc(sizeof(double*) * batch_count);
+                workspace_batched = (double **) malloc(sizeof(double*) * batch_count);
                 if(NULL == input_batched
                    || NULL == output_batched
                    || NULL == workspace_batched){

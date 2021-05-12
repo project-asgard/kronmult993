@@ -81,7 +81,7 @@ extern "C"
 template<>
 void multiply_transpose<float>(const float X_const[], const int nb_col_X_const,
                                const float M_const[], const int size_M_const, const int stride_M_const,
-                               float Y[], float M_transposed[])
+                               float Y[], float[])
 {
     // drops some const qualifiers as requested by BLAS
     auto X = const_cast<float*>(X_const);
@@ -102,7 +102,7 @@ void multiply_transpose<float>(const float X_const[], const int nb_col_X_const,
 template<>
 void multiply_transpose<double>(const double X_const[], const int nb_col_X_const,
                                 const double M_const[], const int size_M_const, const int stride_M_const,
-                                double Y[], double M_transposed[])
+                                double Y[], double[])
 {
     // drops some const qualifiers as requested by BLAS
     auto X = const_cast<double*>(X_const);
