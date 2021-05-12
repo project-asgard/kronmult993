@@ -47,11 +47,6 @@ void kronmult(const int matrix_count, const int matrix_size, T const * const mat
     }
 
     // reduce in a threadsafe way
-    // TODO by storing the results and then looping:
-    //  parallelfor(size_input){for(batch)}
-    //  we could get a perfect, no sync required reduction
-    //  as the threads would be acting on different indices of the result
-    //  things would obviously be nicer if we reverse the loop and precompute the indices for all the threads
     for(int i = 0; i < size_input; i++)
     {
         #pragma omp atomic
@@ -84,7 +79,6 @@ void kronmult_batched(const int matrix_count, const int matrix_size, T const * c
     #pragma omp parallel
     {
         // workspace that will be used to store matrix transpositions
-        // TODO would be more efficient if asgard feed us transposed matrices of allocated workspaces
         T* transpose_workspace = new T[matrix_size*matrix_size];
 
         #pragma omp for

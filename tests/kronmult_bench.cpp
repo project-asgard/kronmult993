@@ -6,7 +6,7 @@
 /*
  * run a test on a single, large, case
  * as those are the one for which computing time matters most
- * TODO as the asgard team for a representative large case
+ * TODO ask the asgard team for a *representative* large case
  */
 int main()
 {
@@ -18,7 +18,7 @@ int main()
     const int grid_level = 1; // goes up to 4 but time goes up quicly and allocs can fail
     const int degree = 8;
     // Kronmult parameters
-    const int batch_count_increase = 10; // used to increase batchcount by a given factor to get a larger case size
+    const int batch_count_increase = 1; // used to increase batchcount by a given factor to get a larger case size
     const int batch_count = batch_count_increase * degree * pow_int(2, grid_level*dimensions);
     const int matrix_size = degree;
     const int size_input = pow_int(degree, dimensions);
@@ -67,6 +67,7 @@ int main()
 
     // deallocates the problem
     std::cout << "Starting delete." << std::endl;
+    // TODO simulate the fact that the output vector are often identical by using identical pointers
     for(int batch = 0; batch < batch_count; batch++)
     {
         for(int mat = 0; mat < matrix_count; mat++)
@@ -85,6 +86,23 @@ int main()
 }
 
 /*
+ * some measures (login node, not fully reserved but late at night)
+ *
+ * BLAS
  * min runtime: 1515ms
- * batchx10: 19030ms
+ * transpose: 1201 (1496)
+ * no atomic on reduction (ideal case): 1600
+ * reduction parallel on size: 7148 (SUPER SLOW)
+ * reduction parallel on batch: 1800
+ *
+ * No BLAS
+ * base: 1200 => seem to be the fastest ?! (should ve validated on dedicated node)
+ * no reduction: 1760 (often up to 1917)
+ * no transpose no reduction: 1949
+ * no transpose but reduction: 1873
+ * nothing (simplest implem):1819 (1905) (as low as 1674)
+ *
+ * the no blas version appears to be the fastest!
+ * that would require further, proper, testing
+ * if it confirms, we can drop blas which would simplify the code and cmakes
  */
