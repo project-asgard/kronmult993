@@ -31,4 +31,12 @@ small: 0ms
 medium: 9ms
 large: 5867ms
 realistic: 5794ms
-=> about 1s slower than BLAS
+=> about 20% slower than BLAS
+
+Old Kronmult (min of 5 runs)
+toy: 0ms
+small: 0ms
+medium: 5ms
+large: 8688ms
+realistic: 8623ms
+=> speed similar to old no-blas version
