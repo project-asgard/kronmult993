@@ -1,6 +1,7 @@
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -O3 -g")
 
+# define adds OpenMP flags
 find_package(OpenMP)
 if (OpenMP_CXX_FOUND)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
@@ -8,17 +9,19 @@ if (OpenMP_CXX_FOUND)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
     endif ()
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+    message("-- OpenMP detected ---")
 else ()
-    message("-- WARNING - building kronmult without OpenMP support ---")
+    message(WARNING "Building Kronmult without OpenMP support.")
 endif ()
 
 # define KRONMULT_USE_BLAS if BLAS is found
 find_package(BLAS)
-if (BLAS_FOUND OR USE_MKL)
+if (BLAS_FOUND)
     add_compile_definitions(KRONMULT_USE_BLAS)
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${BLAS_LINKER_FLAGS}")
     message("-- BLAS detected ---")
 else()
-    message("-- WARNING - building kronmult without BLAS support ---")
+    message(WARNING "Building Kronmult without BLAS support.")
 endif()
 
 set(KRONSRC
