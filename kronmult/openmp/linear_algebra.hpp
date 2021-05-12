@@ -50,15 +50,12 @@ void multiply_transpose(const T X[], const int nb_col_X,
 
     for(int rowM=0; rowM < size_M; rowM++)
     {
-        const T* M_transposed_col = &M_transposed[colmajor(0,rowM,size_M)];
         for(int colX=0; colX < nb_col_X; colX++)
         {
-            const T* X_transposed_row = &X[colmajor(0,colX,size_M)];
             T dotprod = 0.;
-            #pragma omp simd reduction(+:dotprod)
             for(int k=0; k < size_M; k++)
             {
-                dotprod += X_transposed_row[k] * M_transposed_col[k];
+                dotprod += X[colmajor(k,colX,size_M)] * M_transposed[colmajor(k,rowM,size_M)];
             }
             Y[colmajor(colX,rowM,nb_col_X)] = dotprod;
         }
@@ -94,7 +91,7 @@ void multiply_transpose<float>(const float X_const[], const int nb_col_X_const,
     char should_transpose_M = 'T';
     float weight_XM = 1.0f;
     float weight_Y = 0.0f;
-    int errorCode = sgemm_(&should_transpose_X, &should_transpose_M, &nb_col_X, &size_M, &size_M,
+    /*int errorCode =*/ sgemm_(&should_transpose_X, &should_transpose_M, &nb_col_X, &size_M, &size_M,
                            &weight_XM, X, &size_M, M, &stride_M, &weight_Y, Y, &nb_col_X);
     //if (errorCode != 0) throw std::runtime_error("BLAS routine 'SGEMM' failed with error code " + std::to_string(errorCode));
 }
@@ -115,7 +112,7 @@ void multiply_transpose<double>(const double X_const[], const int nb_col_X_const
     char should_transpose_M = 'T';
     double weight_XM = 1.0;
     double weight_Y = 0.0;
-    int errorCode = dgemm_(&should_transpose_X, &should_transpose_M, &nb_col_X, &size_M, &size_M,
+    /*int errorCode =*/ dgemm_(&should_transpose_X, &should_transpose_M, &nb_col_X, &size_M, &size_M,
                            &weight_XM, X, &size_M, M, &stride_M, &weight_Y, Y, &nb_col_X);
     //if (errorCode != 0) throw std::runtime_error("BLAS routine 'DGEMM' failed with error code " + std::to_string(errorCode));
 }

@@ -1,0 +1,34 @@
+tests run on a haswell node (64 cores, exclusive reservation)
+we use the MKL as our BLAS of choice
+we use the minimum of several runs as its the best representation of the actual computing time (noise is additive)
+
+BLAS (min of 3 runs)
+toy: 3ms
+small: 7ms
+medium: 4ms
+large: 4975ms
+realistic: 4886ms
+
+BLAS no atomic reduction (min of 3 runs)
+toy: 3ms
+small: 12ms
+medium: 1ms
+large: 4812ms
+realistic: 4713ms
+=> barely faster, the synchronisation on reduction is NOT a bottleneck
+
+BLAS explicit transpose (min of 3 runs)
+toy: 2ms
+small: 20ms
+medium: 3ms
+large: 4891ms
+realistic: 4789ms
+=> very small improvements, not worth it
+
+No BLAS (min of 4 runs)
+toy: 0ms
+small: 0ms
+medium: 7ms
+large: 7031ms
+realistic: 6889ms
+=> almost twice as slow
