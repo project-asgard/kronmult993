@@ -1,6 +1,7 @@
+
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -O3 -g")
+
 find_package(OpenMP)
-find_package(BLAS REQUIRED)
 if (OpenMP_CXX_FOUND)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
     if (USE_MKL)
@@ -8,9 +9,16 @@ if (OpenMP_CXX_FOUND)
     endif ()
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
 else ()
-    message("-- WARNING - building kronmult without openMP support ---")
+    message("-- WARNING - building kronmult without OpenMP support ---")
 endif ()
 
+# define KRONMULT_USE_BLAS if BLAS is found
+find_package(BLAS)
+if (BLAS_FOUND)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DKRONMULT_USE_BLAS")
+else()
+    message("-- WARNING - building kronmult without BLAS support ---")
+endif()
 
 set(KRONSRC
         kronmult_openmp.hpp
@@ -36,10 +44,7 @@ set_target_properties(kron PROPERTIES LINKER_LANGUAGE CXX)
 if (USE_GPU)
     set_target_properties(kron PROPERTIES CUDA_ARCHITECTURES OFF)
 else()
-    set_target_properties(kron PROPERTIES
-            CXX_STANDARD 17
-            CXX_EXTENSIONS OFF
-            )
+    set_target_properties(kron PROPERTIES CXX_STANDARD 17 CXX_EXTENSIONS OFF)
 endif ()
 target_compile_features(kron INTERFACE cxx_std_17)## INTERFACE or PUBLIC?
 target_include_directories(kron INTERFACE ./) ## INTERFACE or PUBLIC?

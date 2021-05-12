@@ -18,6 +18,6 @@ else ()
 endif ()
 
 include(CTest)
-enable_testing ()
+enable_testing()
 add_subdirectory(kronmult)
 add_subdirectory(tests)

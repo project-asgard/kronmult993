@@ -1,11 +1,10 @@
 #pragma once
-#define CHECK(X) if (X != 0) {cerr << "Error in BLAS GEMM call"<< endl; exit(-1);}
 
 /*
  * converts row and col indices into a single index for a matrix store in col-major
  * `stride` is usually the number of rows of the matrix
  */
-inline int colmajor(const int row, const int col, const int stride)
+constexpr int colmajor(const int row, const int col, const int stride)
 {
     return row + col*stride;
 }
@@ -30,94 +29,6 @@ void transpose(const T input[], T output[], const int matrix_size, const int inp
     }
 }
 
-// BLAS function header: call to mkl, lapack, magma or others.
-// Col-Major by default.
-extern "C"
-{
-    // matrix multiplication
-    //double precision: fp64
-    int dgemm_(char *transa, char *transb, int *m, int *n, int *k, double *alpha, double *A, int *lda, double *B, int *ldb, double *beta, double *C, int *ldc);
-    //single precision: fp32
-    int sgemm_(char *transa, char *transb, int *m, int *n, int *k, float *alpha, float *A, int *lda, float *B, int *ldb, float *beta, float *C, int *ldc);
-}
-
-/*
- * Computes Y = X^T * M^T
- *      <=> Y[i,j] = X[k,i] * M[j,k]
- *
- * X is a `size_M` by `nb_col_X` matrix
- * M is a `size_M` by `size_M` matrix of stride `matrix_stride`
- * Y is a `nb_col_X` by `size_M` matrix
- * M_transposed is a `size_M` by `size_M` matrix of stride `size_M` to store M^T temporarily
- *
- * WARNING: the matrices are assumed to be stored in col-major order
- */
-template<typename T>
-void multiply_transpose_blas(const T X[], const int nb_col_X,
-                                        const T M[], const int size_M, const int stride_M,
-                                        T Y[])
-{
-    std::cerr << "Error type not supported"<< std::endl;
-    exit(-1);
-}
-
-template<typename T>
-void multiply_transpose_blas_fillargs(int * res, char * transa, char * transb, int * m, int * n, int * k,
-        T * one, T * zero, int * lda, int * ldb, int * ldc, const int nb_col_X, const int size_M, const int stride_M,
-        T ** A, T ** B, T ** C, const T * X, const T * M, T * Y)
-{
-    // C = alpha*A*B + beta * C
-    // C (m,n), A (m,k), B (k,n)
-    // C<>Y A<>X B<>M
-    // Y (nbCol,sizeM), X (sizeM,nbCol), M (sizeM,sizeM)
-    // m == nbCol
-    // n == size_M
-    // k == size_M
-    *transa = 'T'; 
-    *transb = 'T';
-    *m = nb_col_X;
-    *n = size_M;
-    *k = size_M;
-    *one = static_cast<T>(1);
-    *zero = static_cast<T>(0.0);
-    /* lda/b/c are given by number of lines (ColMajor) */
-    *lda = size_M; // X(<>A) is a size_M by nb_col_X matrix
-    *ldb = stride_M; // M(<>B) is a size_M by size_M matrix
-    *ldc = nb_col_X; // Y(<>C) is a nb_col_X by size_M matrix
-    *A = const_cast<T*>(X);
-    *B = const_cast<T*>(M);
-    *C = Y;
-    *res = 0;
-}
-
-template<>
-void multiply_transpose_blas<float>(const float X[], const int nb_col_X,
-                                        const float M[], const int size_M, const int stride_M,
-                                        float Y[])
-{
-    float *A, *B, *C, zero, one;
-    char transa, transb;
-    int m, n, k, lda, ldb, ldc, res;
-    multiply_transpose_blas_fillargs<float>(&res, &transa, &transb, &m, &n, &k, &one, &zero, &lda, &ldb,
-            &ldc, nb_col_X, size_M, stride_M, &A, &B, &C, X, M, Y);
-    res = sgemm_(&transa, &transb, &m, &n, &k, &one, A, &lda, B, &ldb, &zero, C, &ldc);
-    CHECK(res);
-}
-
-template<>
-void multiply_transpose_blas<double>(const double X[], const int nb_col_X,
-                                        const double M[], const int size_M, const int stride_M,
-                                        double Y[])
-{
-    double *A, *B, *C, zero, one;
-    char transa, transb;
-    int m, n, k, lda, ldb, ldc, res;
-    multiply_transpose_blas_fillargs<double>(&res, &transa, &transb, &m, &n, &k, &one, &zero, &lda, &ldb,
-            &ldc, nb_col_X, size_M, stride_M, &A, &B, &C, X, M, Y);
-    res = dgemm_(&transa, &transb, &m, &n, &k, &one, A, &lda, B, &ldb, &zero, C, &ldc);
-    CHECK(res);
-}
-
 /*
  * Computes Y = X^T * M^T
  *      <=> Y[i,j] = X[k,i] * M[j,k]
@@ -131,9 +42,11 @@ void multiply_transpose_blas<double>(const double X[], const int nb_col_X,
  */
 template<typename T>
 void multiply_transpose(const T X[], const int nb_col_X,
-                                        const T M[], const int size_M, const int stride_M,
-                                        T Y[], T M_transposed[])
+                        const T M[], const int size_M, const int stride_M,
+                        T Y[], T M_transposed[])
 {
+    std::cerr << "not using blas!" << std::endl;
+
     // transpose the matrix to get a better alignement
     transpose(M, M_transposed, size_M, stride_M);
 
@@ -153,3 +66,62 @@ void multiply_transpose(const T X[], const int nb_col_X,
         }
     }
 }
+
+#ifdef KRONMULT_USE_BLAS
+
+// BLAS function header: call to mkl, lapack, magma or others.
+// Col-Major by default.
+extern "C"
+{
+    // matrix multiplication
+    //double precision: fp64
+    int dgemm_(char* transa, char* transb, int* m, int* n, int* k, double* alpha, double* A, int* lda, double* B, int* ldb, double* beta, double* C, int* ldc);
+    //single precision: fp32
+    int sgemm_(char* transa, char* transb, int* m, int* n, int* k, float* alpha, float* A, int* lda, float* B, int* ldb, float* beta, float* C, int* ldc);
+}
+
+template<>
+void multiply_transpose<float>(const float X_const[], const int nb_col_X_const,
+                               const float M_const[], const int size_M_const, const int stride_M_const,
+                               float Y[], float M_transposed[])
+{
+    // drops some const qualifiers as requested by BLAS
+    float* X = const_cast<float*>(X_const);
+    float* M = const_cast<float*>(M_const);
+    int nb_col_X = nb_col_X_const;
+    int size_M = size_M_const;
+    int stride_M = stride_M_const;
+    // Y = weight_XM * X^T * M^T + weight_Y * Y
+    char should_transpose_X = 'T';
+    char should_transpose_M = 'T';
+    float weight_XM = 1.0f;
+    float weight_Y = 0.0f;
+    int errorCode = sgemm_(&should_transpose_X, &should_transpose_M, &nb_col_X, &size_M, &size_M,
+                           &weight_XM, X, &size_M, M, &stride_M, &weight_Y, Y, &nb_col_X);
+    // TODO gets a non-zero code but correct result ?!
+    //if (errorCode != 0) throw std::runtime_error("BLAS routine 'SGEMM' failed with error code " + std::to_string(errorCode));
+}
+
+template<>
+void multiply_transpose<double>(const double X_const[], const int nb_col_X_const,
+                                const double M_const[], const int size_M_const, const int stride_M_const,
+                                double Y[], double M_transposed[])
+{
+    // drops some const qualifiers as requested by BLAS
+    double* X = const_cast<double*>(X_const);
+    double* M = const_cast<double*>(M_const);
+    int nb_col_X = nb_col_X_const;
+    int size_M = size_M_const;
+    int stride_M = stride_M_const;
+    // Y = weight_XM * X^T * M^T + weight_Y * Y
+    char should_transpose_X = 'T';
+    char should_transpose_M = 'T';
+    double weight_XM = 1.0;
+    double weight_Y = 0.0;
+    int errorCode = dgemm_(&should_transpose_X, &should_transpose_M, &nb_col_X, &size_M, &size_M,
+                           &weight_XM, X, &size_M, M, &stride_M, &weight_Y, Y, &nb_col_X);
+    // TODO gets a non-zero code but correct result ?!
+    //if (errorCode != 0) throw std::runtime_error("BLAS routine 'DGEMM' failed with error code " + std::to_string(errorCode));
+}
+
+#endif

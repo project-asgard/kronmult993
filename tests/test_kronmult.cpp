@@ -1,12 +1,13 @@
 #include <chrono>
 #include <malloc.h>
 #include <random>
-
 #include <iomanip>
-#include <kronmult_openmp.hpp>
+#include <iostream>
+#include <openmp/linear_algebra.hpp>
 #include <openmp/kronmult.hpp>
+
 #define  DEBUG 1
-static constexpr size_t TOTAL_ITERATIONS = 10;
+const size_t TOTAL_ITERATIONS = 10;
 
 template<typename  T>
 void random_init(T X[], int nb_row_X, int nb_col_X, int stride)
@@ -19,7 +20,7 @@ void random_init(T X[], int nb_row_X, int nb_col_X, int stride)
     {
         for(size_t colindex=0 ; colindex<nb_col_X; colindex++)
         {
-            X[kronmult_openmp::colmajor(rowindex, colindex, stride)] =
+            X[colmajor(rowindex, colindex, stride)] =
                 static_cast<T>(random()) / static_cast<T>(INT64_MAX);
         }
     }
@@ -32,7 +33,7 @@ void value_init(T X[], int nb_row_X, int nb_col_X, int stride, T value)
     {
         for(size_t colindex=0 ; colindex<nb_col_X; colindex++)
         {
-            X[kronmult_openmp::colmajor(rowindex, colindex, stride)] = value;
+            X[colmajor(rowindex, colindex, stride)] = value;
         }
     }
 }
@@ -50,9 +51,9 @@ int main(int ac, char * av[]){
         for(size_t grid_level = 2; grid_level <= 4; grid_level++){
             for(size_t degree = 2; degree <=8; degree++){
 
-                size_t batch_count = degree * kronmult_openmp::pow_long(2, grid_level*dimensions);
+                size_t batch_count = degree * pow_int(2, int(grid_level*dimensions));
                 size_t matrix_size = degree;
-                size_t size_input = kronmult_openmp::pow_int(degree, dimensions);
+                size_t size_input = pow_int(degree, dimensions);
                 size_t matrix_count = dimensions;
                 size_t matrix_stride = matrix_size;// TODO: What does it represents in Asgard?
 #ifdef DEBUG
@@ -124,15 +125,15 @@ int main(int ac, char * av[]){
                 {
                     // kronmult_openmp::kronmult(matrix_count, matrix_size, matrix_list, matrix_stride, input,
                     //                      size_input, output, workspace, transpose_workspace);
-                    kronmult_openmp::kronmult_batched(matrix_count, matrix_size, matrix_list_batched,
+                    kronmult_batched(matrix_count, matrix_size, matrix_list_batched,
                                                       matrix_stride, input_batched, output_batched,
                                                       workspace_batched, batch_count);
                 }
                 auto stop = std::chrono::high_resolution_clock::now();
                 // TODO: plot time/FLOPS
-                double flops = std::pow(kronmult_openmp::pow_long(degree, dimensions), 3.) * batch_count * TOTAL_ITERATIONS;
-                double real_flops = std::pow(degree, dimensions)* std::pow(degree,2) * batch_count * TOTAL_ITERATIONS;
-                double orig_flops = 12.*std::pow(degree, dimensions+1) * batch_count * TOTAL_ITERATIONS;
+                double flops = pow_int(degree, dimensions * 3) * batch_count * TOTAL_ITERATIONS;
+                double real_flops = pow_int(degree, dimensions + 2) * batch_count * TOTAL_ITERATIONS;
+                double orig_flops = 12.*pow_int(degree, dimensions+1) * batch_count * TOTAL_ITERATIONS;
                 std::chrono::duration<double> diff = stop-start;
                 std::cout << "Time: " << diff.count() << std::endl;
                 std::cout << "Theoretical Flops/sec: " << flops/diff.count() << std::endl;
