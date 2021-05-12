@@ -83,11 +83,9 @@ void multiply_transpose<float>(const float X_const[], const int nb_col_X_const,
                                const float M_const[], const int size_M_const, const int stride_M_const,
                                float Y[], float M_transposed[])
 {
-    std::cerr << "using blas!" << std::endl;
-
     // drops some const qualifiers as requested by BLAS
-    float* X = const_cast<float*>(X_const);
-    float* M = const_cast<float*>(M_const);
+    auto X = const_cast<float*>(X_const);
+    auto M = const_cast<float*>(M_const);
     int nb_col_X = nb_col_X_const;
     int size_M = size_M_const;
     int stride_M = stride_M_const;
@@ -98,7 +96,6 @@ void multiply_transpose<float>(const float X_const[], const int nb_col_X_const,
     float weight_Y = 0.0f;
     int errorCode = sgemm_(&should_transpose_X, &should_transpose_M, &nb_col_X, &size_M, &size_M,
                            &weight_XM, X, &size_M, M, &stride_M, &weight_Y, Y, &nb_col_X);
-    // TODO gets a non-zero code but correct result ?!
     //if (errorCode != 0) throw std::runtime_error("BLAS routine 'SGEMM' failed with error code " + std::to_string(errorCode));
 }
 
@@ -107,11 +104,9 @@ void multiply_transpose<double>(const double X_const[], const int nb_col_X_const
                                 const double M_const[], const int size_M_const, const int stride_M_const,
                                 double Y[], double M_transposed[])
 {
-    std::cerr << "using blas!" << std::endl;
-
     // drops some const qualifiers as requested by BLAS
-    double* X = const_cast<double*>(X_const);
-    double* M = const_cast<double*>(M_const);
+    auto X = const_cast<double*>(X_const);
+    auto M = const_cast<double*>(M_const);
     int nb_col_X = nb_col_X_const;
     int size_M = size_M_const;
     int stride_M = stride_M_const;
@@ -122,7 +117,6 @@ void multiply_transpose<double>(const double X_const[], const int nb_col_X_const
     double weight_Y = 0.0;
     int errorCode = dgemm_(&should_transpose_X, &should_transpose_M, &nb_col_X, &size_M, &size_M,
                            &weight_XM, X, &size_M, M, &stride_M, &weight_Y, Y, &nb_col_X);
-    // TODO gets a non-zero code but correct result ?!
     //if (errorCode != 0) throw std::runtime_error("BLAS routine 'DGEMM' failed with error code " + std::to_string(errorCode));
 }
 
