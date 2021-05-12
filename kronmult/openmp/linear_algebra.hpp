@@ -91,9 +91,8 @@ void multiply_transpose<float>(const float X_const[], const int nb_col_X_const,
     char should_transpose_M = 'T';
     float weight_XM = 1.0f;
     float weight_Y = 0.0f;
-    /*int errorCode =*/ sgemm_(&should_transpose_X, &should_transpose_M, &nb_col_X, &size_M, &size_M,
-                           &weight_XM, X, &size_M, M, &stride_M, &weight_Y, Y, &nb_col_X);
-    //if (errorCode != 0) throw std::runtime_error("BLAS routine 'SGEMM' failed with error code " + std::to_string(errorCode));
+    sgemm_(&should_transpose_X, &should_transpose_M, &nb_col_X, &size_M, &size_M,
+           &weight_XM, X, &size_M, M, &stride_M, &weight_Y, Y, &nb_col_X);
 }
 
 template<>
@@ -112,9 +111,8 @@ void multiply_transpose<double>(const double X_const[], const int nb_col_X_const
     char should_transpose_M = 'T';
     double weight_XM = 1.0;
     double weight_Y = 0.0;
-    /*int errorCode =*/ dgemm_(&should_transpose_X, &should_transpose_M, &nb_col_X, &size_M, &size_M,
-                           &weight_XM, X, &size_M, M, &stride_M, &weight_Y, Y, &nb_col_X);
-    //if (errorCode != 0) throw std::runtime_error("BLAS routine 'DGEMM' failed with error code " + std::to_string(errorCode));
+    dgemm_(&should_transpose_X, &should_transpose_M, &nb_col_X, &size_M, &size_M,
+           &weight_XM, X, &size_M, M, &stride_M, &weight_Y, Y, &nb_col_X);
 }
 
 #endif
