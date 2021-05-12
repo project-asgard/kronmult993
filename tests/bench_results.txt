@@ -25,10 +25,10 @@ large: 4891ms
 realistic: 4789ms
 => very small improvements, not worth it
 
-No BLAS (min of 4 runs)
+No BLAS (min of 5 runs)
 toy: 0ms
 small: 0ms
-medium: 7ms
-large: 7031ms
-realistic: 6889ms
-=> almost twice as slow
+medium: 9ms
+large: 5867ms
+realistic: 5794ms
+=> about 1s slower than BLAS

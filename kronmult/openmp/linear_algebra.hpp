@@ -48,9 +48,9 @@ void multiply_transpose(const T X[], const int nb_col_X,
     // transpose the matrix to get a better alignement
     transpose(M, M_transposed, size_M, stride_M);
 
-    for(int rowM=0; rowM < size_M; rowM++)
+    for(int colX=0; colX < nb_col_X; colX++)
     {
-        for(int colX=0; colX < nb_col_X; colX++)
+        for(int rowM=0; rowM < size_M; rowM++)
         {
             T dotprod = 0.;
             for(int k=0; k < size_M; k++)
