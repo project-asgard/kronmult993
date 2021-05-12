@@ -13,15 +13,13 @@ template<typename  T>
 void random_init(T X[], int nb_row_X, int nb_col_X, int stride)
 {
     static bool first = true;
-    if (first)
-        srand(NULL);
+    if (first) srand(NULL);
     first = false;
     for (size_t rowindex = 0; rowindex < nb_row_X; rowindex++)
     {
         for(size_t colindex=0 ; colindex<nb_col_X; colindex++)
         {
-            X[colmajor(rowindex, colindex, stride)] =
-                static_cast<T>(random()) / static_cast<T>(INT64_MAX);
+            X[colmajor(rowindex, colindex, stride)] = static_cast<T>(random()) / static_cast<T>(INT64_MAX);
         }
     }
 }
@@ -56,7 +54,7 @@ int main(int ac, char * av[]){
                 size_t size_input = pow_int(degree, dimensions);
                 size_t matrix_count = dimensions;
                 size_t matrix_stride = matrix_size;// TODO: What does it represents in Asgard?
-#ifdef DEBUG
+                #ifdef DEBUG
                 std::cerr
                     << "Square Matrix Size (skinny) == Degree: " << degree
                     << " Tall matrix size == size input: " << size_input
@@ -65,7 +63,7 @@ int main(int ac, char * av[]){
                     << " grid level: " << grid_level
                     << " batch count: " << batch_count
                     << std::endl;
-#endif
+                #endif
                 double ** matrix_list_batched = (double **) malloc(sizeof(double *) * batch_count * matrix_count);
                 if(NULL == matrix_list_batched){
                     free(matrix_list_batched);
@@ -121,7 +119,7 @@ int main(int ac, char * av[]){
                 // TODO if clock too small, add a loop to make several time the same execution
                 // TODO Maybe on different data so that there is no cache reuse effect
                 auto start = std::chrono::high_resolution_clock::now();
-                for(int j=0; j< TOTAL_ITERATIONS; j++)
+                for(int j=0; j < TOTAL_ITERATIONS; j++)
                 {
                     // kronmult_openmp::kronmult(matrix_count, matrix_size, matrix_list, matrix_stride, input,
                     //                      size_input, output, workspace, transpose_workspace);

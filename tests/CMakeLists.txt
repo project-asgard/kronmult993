@@ -1,7 +1,6 @@
 set(CMAKE_CXX_STANDARD 17)
 
-set(TEST_FILES
-    test_kronmult)
+set(TEST_FILES test_kronmult kronmult_bench)
 
 foreach(TEST_EXE_NAME ${TEST_FILES})
     add_executable(${TEST_EXE_NAME} ${TEST_EXE_NAME}.cpp)

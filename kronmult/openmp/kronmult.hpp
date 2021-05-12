@@ -47,6 +47,11 @@ void kronmult(const int matrix_count, const int matrix_size, T const * const mat
     }
 
     // reduce in a threadsafe way
+    // TODO by storing the results and then looping:
+    //  parallelfor(size_input){for(batch)}
+    //  we could get a perfect, no sync required reduction
+    //  as the threads would be acting on different indices of the result
+    //  things would obviously be nicer if we reverse the loop and precompute the indices for all the threads
     for(int i = 0; i < size_input; i++)
     {
         #pragma omp atomic

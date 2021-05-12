@@ -45,8 +45,6 @@ void multiply_transpose(const T X[], const int nb_col_X,
                         const T M[], const int size_M, const int stride_M,
                         T Y[], T M_transposed[])
 {
-    std::cerr << "not using blas!" << std::endl;
-
     // transpose the matrix to get a better alignement
     transpose(M, M_transposed, size_M, stride_M);
 
@@ -85,6 +83,8 @@ void multiply_transpose<float>(const float X_const[], const int nb_col_X_const,
                                const float M_const[], const int size_M_const, const int stride_M_const,
                                float Y[], float M_transposed[])
 {
+    std::cerr << "using blas!" << std::endl;
+
     // drops some const qualifiers as requested by BLAS
     float* X = const_cast<float*>(X_const);
     float* M = const_cast<float*>(M_const);
@@ -107,6 +107,8 @@ void multiply_transpose<double>(const double X_const[], const int nb_col_X_const
                                 const double M_const[], const int size_M_const, const int stride_M_const,
                                 double Y[], double M_transposed[])
 {
+    std::cerr << "using blas!" << std::endl;
+
     // drops some const qualifiers as requested by BLAS
     double* X = const_cast<double*>(X_const);
     double* M = const_cast<double*>(M_const);

@@ -14,8 +14,9 @@ endif ()
 
 # define KRONMULT_USE_BLAS if BLAS is found
 find_package(BLAS)
-if (BLAS_FOUND)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DKRONMULT_USE_BLAS")
+if (BLAS_FOUND OR USE_MKL)
+    add_compile_definitions(KRONMULT_USE_BLAS)
+    message("-- BLAS detected ---")
 else()
     message("-- WARNING - building kronmult without BLAS support ---")
 endif()
