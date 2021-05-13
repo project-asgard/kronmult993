@@ -1,5 +1,6 @@
 #include <cstdlib>
 #include <iostream>
+#include "utils.hpp"
 #include <openmp/linear_algebra.hpp>
 
 template<typename  T>
@@ -42,19 +43,6 @@ void value_init(T X[], int nb_row_X, int nb_col_X, int stride, T value)
     }
 }
 
-void display_debug(size_t degree, size_t size_input, size_t matrix_stride, size_t dimensions,
-                   size_t grid_level, size_t batch_count)
-{
-    std::cerr
-        << "Square Matrix Size (skinny) == Degree: " << degree
-        << " Tall matrix size == size input: " << size_input
-        << " Coefficient matrix stride: " << matrix_stride
-        << " Matrix count in kronmult == Dimensions: " << dimensions
-        << " grid level: " << grid_level
-        << " batch count: " << batch_count
-        << std::endl;
-}
-
 template<typename T>
 void initialize_pointers_host( T *** matrix_list_batched_p, T *** input_batched_p, T *** output_batched_p,
                                T *** workspace_batched_p, size_t batch_count, size_t matrix_count, size_t dimensions,
@@ -69,7 +57,7 @@ void initialize_pointers_host( T *** matrix_list_batched_p, T *** input_batched_
        || NULL == output_batched
        || NULL == workspace_batched)
     {
-        display_debug(matrix_size, size_input, matrix_stride, dimensions, grid_level, batch_count);
+        utils::display_debug(matrix_size, size_input, matrix_stride, dimensions, grid_level, batch_count);
         delete [] input_batched;
         delete [] output_batched;
         delete [] workspace_batched;
