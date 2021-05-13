@@ -43,7 +43,7 @@ large: 8688ms
 realistic: 8623ms
 => speed similar to old no-blas version
 
--------------------- DOUBLE --------------------
+-------------------- FLOAT --------------------
 
 BLAS (min of 3 runs)
 toy: 3ms
@@ -59,5 +59,9 @@ medium: 5ms
 large: 3969ms
 realistic: 3874ms
 
-Old Kronmult (min of 1 runs)
-
+Old Kronmult (min of 3 runs)
+toy: 0ms
+small: 0ms
+medium: 6ms
+large: 7352ms
+realistic: 7342ms
