@@ -1,5 +1,4 @@
 #pragma once
-
 #include <mkl_blas.h>
 
 /*
@@ -57,21 +56,38 @@ void multiply_transpose_batched(const T* input_batched[], const int nb_col_input
     }
 }
 
-/*
- * TODO write doc
- * TODO add float version
- */
+template<>
+void multiply_transpose_batched<float>(const float* input_batched[], const int nb_col_input_batched[], const char should_transpose_input_batched[],
+                                       const float* matrix_batched[], const int matrix_size_batched[], const int matrix_stride_batched[], const char should_transpose_matrix_batched[],
+                                       float* output_batched[], int nb_batch)
+{
+    // number of different weighting schemes
+    int group_count = 1;
+    auto weight_product = new float[group_count];
+    auto weight_output = new float[group_count];
+
+    sgemm_batch(should_transpose_input_batched, should_transpose_matrix_batched,
+                nb_col_input_batched, matrix_size_batched, matrix_size_batched,
+                weight_product,
+                input_batched, matrix_size_batched,
+                matrix_batched, matrix_stride_batched,
+                weight_output, output_batched, nb_col_input_batched,
+                &group_count, &nb_batch);
+
+    delete[] weight_product;
+    delete[] weight_output;
+}
+
 template<>
 void multiply_transpose_batched<double>(const double* input_batched[], const int nb_col_input_batched[], const char should_transpose_input_batched[],
                                         const double* matrix_batched[], const int matrix_size_batched[], const int matrix_stride_batched[], const char should_transpose_matrix_batched[],
                                         double* output_batched[], int nb_batch)
 {
-    // number of different weights
+    // number of different weighting schemes
     int group_count = 1;
     auto weight_product = new double[group_count];
     auto weight_output = new double[group_count];
 
-    // https://scc.ustc.edu.cn/zlsc/tc4600/intel/2017.0.098/mkl/common/mklman_c/GUID-D797E8FA-B0CE-417C-98F1-896CDFB4FC35.htm
     dgemm_batch(should_transpose_input_batched, should_transpose_matrix_batched,
                 nb_col_input_batched, matrix_size_batched, matrix_size_batched,
                 weight_product,

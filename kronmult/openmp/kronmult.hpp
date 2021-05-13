@@ -30,8 +30,6 @@ void kronmult_batched(const int matrix_count, const int matrix_size, T const * c
                       T* output_batched[], T* workspace_batched[],
                       const int nb_batch)
 {
-    // TODO we could put everything in a single parallel section and have an omp_single sections when we want to run sequentially
-
     // numbers of elements in the input vector
     int size_input = pow_int(matrix_size, matrix_count);
     // how many column should `input` have for the multiplications to be legal
