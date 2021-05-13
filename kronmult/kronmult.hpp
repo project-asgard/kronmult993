@@ -4,9 +4,10 @@
 /*
  * wrapper on top of the various kronmult implementations
  */
-void kronmult_batched(const int matrix_count, const int matrix_size, double const * const matrix_list_batched[], const int matrix_stride,
-                      double* input_batched[],
-                      double* output_batched[], double* workspace_batched[],
+template<typename T>
+void kronmult_batched(const int matrix_count, const int matrix_size, T const * const matrix_list_batched[], const int matrix_stride,
+                      T* input_batched[],
+                      T* output_batched[], T* workspace_batched[],
                       const int nb_batch)
 {
     switch(matrix_count)
