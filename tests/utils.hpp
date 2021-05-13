@@ -1,4 +1,5 @@
 #pragma once
+#define USE_GPU
 #ifdef USE_GPU
 // Generate random numbers with Cuda
 #include <curand.h>
@@ -88,38 +89,42 @@ namespace utils
         {
             // TODO: should bne changed in template (device == true) function.
             T ** matrix_list_batched_p;
-           cudaMalloc(sizeof(T *) * batch_count * matrix_count,
-                    true);
-            T ** input_batched_p = (T **) cudaMalloc(sizeof(T*) * batch_count, true);
-            T * input_batched  =  (T*) cudaMalloc(sizeof(T) * batch_count * size_input, true);
-            T ** output_batched_p = (T **) cudaMalloc(sizeof(T*) * batch_count, true);
-            T * output_batched  =  (T*) cudaMalloc(sizeof(T) * batch_count * size_input, true);
-            T ** workspace_batched_p = (T **) cudaMalloc(sizeof(T*) * batch_count, true);
-            T * workspace_batched  =  (T*) cudaMalloc(sizeof(T) * batch_count * size_input, true);
+            T ** input_batched_p;
+            T ** output_batched_p;
+            T ** workspace_batched_p;
+            T * input_batched;
+            T * output_batched;
+            T * workspace_batched;
+            cudaMalloc(&matrix_list_batched_p, sizeof(T *) * batch_count * matrix_count);
+            cudaMalloc(&input_batched_p, sizeof(T*) * batch_count);
+            cudaMalloc(&input_batched, sizeof(T) * batch_count * size_input);
+            cudaMalloc(&output_batched_p, sizeof(T*) * batch_count);
+            cudaMalloc(&output_batched, sizeof(T) * batch_count * size_input);
+            cudaMalloc(&workspace_batched_p, sizeof(T*) * batch_count);
+            cudaMalloc(&workspace_batched, sizeof(T) * batch_count * size_input);
             if(NULL == matrix_list_batched_p
                     || NULL == input_batched_p
                     || NULL == output_batched_p
                     || NULL == workspace_batched_p)
             {
                 display_debug(matrix_size, size_input, matrix_stride, dimensions, grid_level, batch_count);
-                free_wrapper(input_batched_p, true);
-                free_wrapper(output_batched_p, true);
-                free_wrapper(workspace_batched_p,true);
-                free_wrapper(matrix_list_batched_p,true);
+                cudaFree(input_batched_p);
+                cudaFree(output_batched_p);
+                cudaFree(workspace_batched_p);
+                cudaFree(matrix_list_batched_p);
                 std::cerr << "Dynamic allocation failed." << std::endl;
                 return;
             }
             // Initialization of 2dimensions array
-            T *square_matrix = (T *) cudaMalloc(sizeof(T) * matrix_size * matrix_size, true);
-            random_init_flatarray_device(matrix_list_batched, batch_count * matrix_count * matrix_size * matrix_size);
-            init_array_pointer(matrix_list_batched_p, matrix_list_batched, batch_count * matrix_count, matrix_size * matrix_size);
+            random_init_flatarray_device(matrix_list_batched_p, batch_count * matrix_count * matrix_size * matrix_size);
+            init_array_pointer_device(matrix_list_batched_p, matrix_list_batched_p, batch_count * matrix_count, matrix_size * matrix_size);
             // Initializing 1dimension arrays
             random_init_flatarray_device(input_batched, batch_count * size_input); // tensor matrix_size ^ matrix_number
             value_init_flatarray_device(output_batched, batch_count * size_input, 0.); // tensor matrix_size ^ matrix_number
             value_init_flatarray_device(workspace_batched, batch_count * size_input, 0.); // tensor matrix_size ^ matrix_number
-            init_array_pointer(input_batched_p, workspace_batched, batch_count, size_input);
-            init_array_pointer(output_batched_p, workspace_batched, batch_count, size_input);
-            init_array_pointer(workspace_batched_p, workspace_batched, batch_count, size_input);
+            init_array_pointer_device(input_batched_p, workspace_batched, batch_count, size_input);
+            init_array_pointer_device(output_batched_p, workspace_batched, batch_count, size_input);
+            init_array_pointer_device(workspace_batched_p, workspace_batched, batch_count, size_input);
 
             *matrix_list_batched_pp = matrix_list_batched_p;
             *input_batched_pp       = input_batched_p;
