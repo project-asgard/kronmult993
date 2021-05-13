@@ -1,13 +1,16 @@
 #pragma once
+#ifdef USE_GPU
 // Generate random numbers with Cuda
 #include <curand.h>
 // CUDA runtime
 #include <cuda_runtime.h>
 // Helper functions and utilities to work with CUDA
 #include <helper_cuda.h>
+#endif
 
 namespace utils
 {
+#ifdef USE_GPU
     /* Generate matrix */
     void GPU_fill_rand(double *A, int N){
         curandGenerator_t prng;
@@ -15,6 +18,7 @@ namespace utils
         curandSetPseudoRandomGeneratorSeed(prng, (unsigned long long) clock());
         curandGenerateUniformDouble(prng, A, N);
     }
+#endif
 
     template<typename  T>
         void random_init(T X[], int nb_row_X, int nb_col_X, int stride)
@@ -37,13 +41,16 @@ namespace utils
         void init_array_pointer(T ** X_p, T* X, 
                 size_t outer_size, size_t inner_size);
         {
+#ifdef USE_GPU
+            // GPU code
+            init_array_pointer<<<32>>>(X_p, X, outer_size, inner_size);
+#else
             // CPU code
             for (size_t outer_p_index= 0;  outer_p_index < outer_size; outer_p_index++)
             {
                 X_p[outer_p_index] = &(X + outer_p_index*inner_size);
             }
-            // GPU code
-            init_array_pointer<<<32>>>(X_p, X, outer_size, inner_size);
+#endif
         }
 
     template<typename  T>
@@ -71,6 +78,7 @@ namespace utils
             << std::endl;
     }
 
+#ifdef USE_GPU
     template<typename T>
         void initialize_pointers_device( T *** matrix_list_batched_pp, T *** input_batched_pp, T *** output_batched_pp,
                 T *** workspace_batched_pp, size_t batch_count, size_t matrix_count, size_t dimensions,
@@ -115,6 +123,7 @@ namespace utils
             *output_batched_pp      = output_batched_p;
             *workspace_batched_pp   = workspace_batched_p;
         }
+#endif
 
     template<typename T>
         void initialize_pointers_host( T *** matrix_list_batched_p, T *** input_batched_p, T *** output_batched_p,

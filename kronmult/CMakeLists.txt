@@ -44,9 +44,12 @@ endif ()
 
 add_library(kron SHARED ${KRONSRC})
 set_target_properties(kron PROPERTIES LINKER_LANGUAGE CXX)
-
 if (USE_GPU)
+    ## TODO: We want something more robust:
+    ## TODO: reopen https://github.com/project-asgard/asgard/pull/307
+    ## TODO: ideas https://gitlab.kitware.com/cmake/cmake/-/issues/21666
     set_target_properties(kron PROPERTIES CUDA_ARCHITECTURES OFF)
+    set_target_properties(kron PROPERTIES CXX_STANDARD 17 CXX_EXTENSIONS OFF)
 else()
     set_target_properties(kron PROPERTIES CXX_STANDARD 17 CXX_EXTENSIONS OFF)
 endif ()
