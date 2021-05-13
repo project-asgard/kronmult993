@@ -57,7 +57,7 @@ void initialize_pointers_host( T *** matrix_list_batched_p, T *** input_batched_
        || NULL == output_batched
        || NULL == workspace_batched)
     {
-        display_debug(matrix_size, size_input, matrix_stride, dimensions, grid_level, batch_count);
+        utils::display_debug(matrix_size, size_input, matrix_stride, dimensions, grid_level, batch_count);
         delete [] input_batched;
         delete [] output_batched;
         delete [] workspace_batched;

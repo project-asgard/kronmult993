@@ -52,7 +52,7 @@ void initialize_pointers_device( T *** matrix_list_batched_pp, T *** input_batch
        || NULL == output_batched_p
        || NULL == workspace_batched_p)
     {
-        display_debug(matrix_size, size_input, matrix_stride, dimensions, grid_level, batch_count);
+        utils::display_debug(matrix_size, size_input, matrix_stride, dimensions, grid_level, batch_count);
         cudaFree(input_batched_p);
         cudaFree(output_batched_p);
         cudaFree(workspace_batched_p);
