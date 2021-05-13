@@ -13,48 +13,6 @@ int pow_int(const int number, const int power)
 }
 
 /*
- * Computes output += kron(matrix_list) * input
- *
- * `matrix_list` is an array containing pointers to `matrix_number` square matrices of size `matrix_size` by `matrix_size` and stride `matrix_stride`
- * `input` is a `size_input`=`matrix_size`^`matrix_number` elements vector
- * `output` is a `size_input` elements vector, where the output will be stored
- * `workspace` is a `size_input` elements vector, to be used as workspace
- * `transpose_workspace` is a vector of size `matrix_size`*`matrix_size` to store transposed matrices temporarily
- *
- * WARNINGS:
- * `input` and `workspace` will be used as temporary workspaces and thus modified
- * the matrices should be stored in col-major order
- */
-template<typename T>
-void kronmult(const int matrix_count, const int matrix_size, T const * const matrix_list[], const int matrix_stride,
-            T input[], const int size_input,
-            T output[],
-            T workspace[], T transpose_workspace[])
-{
-    // how many column should `input` have for the multiplications to be legal
-    const int nb_col_input = size_input / matrix_size;
-
-    // iterates on the matrices from the last to the one just before first
-    for(int i = matrix_count-1; i >= 0; i--)
-    {
-        // takes `matrix` into account and put the result in `workspace` (use `output` as a workspace if needed)
-        T const * const matrix = matrix_list[i];
-        multiply_transpose<T>(input, nb_col_input, matrix, matrix_size, matrix_stride, workspace, transpose_workspace);
-        // swap `input` and `workspace` such that `input` contains once again the input
-        // note that, while they have the same size flattened, the shape (nb_columns and nb_rows) of `input` and `workspace` are different
-        // this is on purpose and equivalent to a reshape operation that is actually needed by the algorithm
-        std::swap(input, workspace);
-    }
-
-    // reduce in a threadsafe way
-    for(int i = 0; i < size_input; i++)
-    {
-        #pragma omp atomic
-        output[i] += input[i];
-    }
-}
-
-/*
  * Computes output[K] += kron(matrix_list[K]) * input[K] for 0 <= k < batchCount
  *
  * `matrix_list_batched` is an array of `nb_batch`*`matrix_count` pointers to square matrices of size `matrix_size` by `matrix_size` and stride `matrix_stride`
@@ -72,27 +30,65 @@ void kronmult_batched(const int matrix_count, const int matrix_size, T const * c
                       T* output_batched[], T* workspace_batched[],
                       const int nb_batch)
 {
+    // TODO we could put everything in a single parallel section and have an omp_single sections when we want to run sequentially
+
     // numbers of elements in the input vector
     int size_input = pow_int(matrix_size, matrix_count);
+    // how many column should `input` have for the multiplications to be legal
+    const int nb_col_input = size_input / matrix_size;
 
-    // runs kronmult one batch at a time
-    #pragma omp parallel
+    // put constants in array format
+    T const* * matrix_batch_listed = new T const*[nb_batch*matrix_count];
+    char* should_transpose_input_batched = new char[nb_batch];
+    char* should_transpose_matrix_batched = new char[nb_batch];
+    int* nb_col_input_batched = new int[nb_batch];
+    int* matrix_size_batched = new int[nb_batch];
+    int* matrix_stride_batched = new int[nb_batch];
+    #pragma omp parallel for
+    for(int b=0; b < nb_batch; b++)
     {
-        // workspace that will be used to store matrix transpositions
-        T* transpose_workspace = new T[matrix_size*matrix_size];
-
-        #pragma omp for
-        for(int i=0; i < nb_batch; i++)
+        for(int m = 0; m < matrix_count; m++)
         {
-            // computes kronmult
-            T const * const * matrix_list = &matrix_list_batched[i*matrix_count];
-            T* input = input_batched[i];
-            T* output = output_batched[i];
-            T* workspace = workspace_batched[i];
-            // result is stored in `workspace` if `matrix_count` is odd and `input` if it is even
-            kronmult<T>(matrix_count, matrix_size, matrix_list, matrix_stride, input, size_input, output, workspace, transpose_workspace);
+            matrix_batch_listed[nb_batch*m + b] = matrix_list_batched[b*matrix_count + m];
         }
+        should_transpose_input_batched[b] = 'T';
+        should_transpose_matrix_batched[b] = 'T';
+        nb_col_input_batched[b] = nb_col_input;
+        matrix_size_batched[b] = matrix_size;
+        matrix_stride_batched[b] = matrix_stride;
+    }
 
-        delete[] transpose_workspace;
+    // iterates on the matrices from the last to the one just before first
+    // puts the result in input_batched
+    for(int m = matrix_count-1; m >= 0; m--)
+    {
+        T const** matrix_batched = &matrix_batch_listed[nb_batch*m];
+        T const** input_batch_const = const_cast<T const**>(input_batched);
+        multiply_transpose_batched<T>(input_batch_const, nb_col_input_batched, should_transpose_input_batched,
+                                      matrix_batched, matrix_size_batched, matrix_stride_batched, should_transpose_matrix_batched,
+                                      workspace_batched, nb_batch);
+        std::swap(input_batched, workspace_batched);
+    }
+
+    // free the memory
+    delete[] matrix_batch_listed;
+    delete[] should_transpose_input_batched;
+    delete[] should_transpose_matrix_batched;
+    delete[] nb_col_input_batched;
+    delete[] matrix_size_batched;
+    delete[] matrix_stride_batched;
+
+    // reduction
+    #pragma omp parallel for
+    for(int b=0; b < nb_batch; b++)
+    {
+        T* input = input_batched[b];
+        T* output = output_batched[b];
+        // reduce in a threadsafe way
+        for(int i = 0; i < size_input; i++)
+        {
+            #pragma omp atomic
+            output[i] += input[i];
+        }
     }
 }
