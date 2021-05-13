@@ -1,5 +1,6 @@
 #include <cstdlib>
 #include <iostream>
+#include "utils.hpp"
 #include <openmp/linear_algebra.hpp>
 
 template<typename  T>
@@ -40,19 +41,6 @@ void value_init(T X[], int nb_row_X, int nb_col_X, int stride, T value)
             X[colmajor(rowindex, colindex, stride)] = value;
         }
     }
-}
-
-void display_debug(size_t degree, size_t size_input, size_t matrix_stride, size_t dimensions,
-                   size_t grid_level, size_t batch_count)
-{
-    std::cerr
-        << "Square Matrix Size (skinny) == Degree: " << degree
-        << " Tall matrix size == size input: " << size_input
-        << " Coefficient matrix stride: " << matrix_stride
-        << " Matrix count in kronmult == Dimensions: " << dimensions
-        << " grid level: " << grid_level
-        << " batch count: " << batch_count
-        << std::endl;
 }
 
 template<typename T>

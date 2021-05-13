@@ -39,4 +39,18 @@ void initialize_pointers_host( T *** matrix_list_batched_p, T *** input_batched_
                                T *** workspace_batched_p, size_t batch_count, size_t matrix_count, size_t dimensions,
                                size_t size_input, size_t matrix_size, size_t matrix_stride, size_t grid_level);
 #endif
+
+void display_debug(size_t degree, size_t size_input, size_t matrix_stride, size_t dimensions,
+                   size_t grid_level, size_t batch_count)
+{
+    std::cerr
+        << "Square Matrix Size (skinny) == Degree: " << degree
+        << " Tall matrix size == size input: " << size_input
+        << " Coefficient matrix stride: " << matrix_stride
+        << " Matrix count in kronmult == Dimensions: " << dimensions
+        << " grid level: " << grid_level
+        << " batch count: " << batch_count
+        << std::endl;
+}
+
 }
