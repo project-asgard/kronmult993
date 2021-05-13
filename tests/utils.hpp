@@ -7,6 +7,8 @@
 // Helper functions and utilities to work with CUDA
 #include <helper_cuda.h>
 #endif
+#include <cstdlib>
+#include <iostream>
 #include <kronmult_openmp.hpp>
 namespace utils
 {
@@ -31,8 +33,8 @@ namespace utils
             {
                 for(size_t colindex=0 ; colindex<nb_col_X; colindex++)
                 {
-                    X[colmajor(rowindex, colindex, stride)] =
-                        static_cast<T>(random()) / static_cast<T>(INT64_MAX);
+                    X[kronmult_openmp::colmajor(rowindex, colindex, stride)] =
+                        static_cast<T>(random()) / static_cast<T>(RAND_MAX);
                 }
             }
         }
@@ -60,7 +62,7 @@ namespace utils
             {
                 for(size_t colindex=0 ; colindex<nb_col_X; colindex++)
                 {
-                    X[colmajor(rowindex, colindex, stride)] = value;
+                    X[kronmult_openmp::colmajor(rowindex, colindex, stride)] = value;
                 }
             }
         }

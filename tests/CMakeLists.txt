@@ -38,7 +38,7 @@ else()
 endif()
 
 # benchmarks
-set(TEST_FILES test_kronmult kronmult_bench)
+set(TEST_FILES test_kronmult kronmult_bench test_utils)
 foreach(TEST_EXE_NAME ${TEST_FILES})
     add_executable(${TEST_EXE_NAME} ${TEST_EXE_NAME}.cpp)
     #set_target_properties(${TEST_EXE_NAME} PROPERTIES LINKER_LANGUAGE  CXX)
