@@ -4,7 +4,7 @@
 #include <openmp/kronmult.hpp>
 
 // change this to run the bench in another precision
-using Number = float;
+using Number = double;
 
 /*
  * runs a benchmark with the given parameters
