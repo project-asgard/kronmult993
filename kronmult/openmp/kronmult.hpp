@@ -1,4 +1,3 @@
-#pragma once
 #include "linear_algebra.hpp"
 
 /*

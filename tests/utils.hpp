@@ -5,7 +5,7 @@
 // CUDA runtime
 #include <cuda_runtime.h>
 // Helper functions and utilities to work with CUDA
-#include <helper_cuda.h>
+//#include <helper_cuda.h>
 #endif
 #include <cstdlib>
 #include <iostream>
@@ -87,14 +87,15 @@ namespace utils
                 size_t size_input, size_t matrix_size, size_t matrix_stride, size_t grid_level)
         {
             // TODO: should bne changed in template (device == true) function.
-            T ** matrix_list_batched_p = (T **) malloc_wrapper(sizeof(T *) * batch_count * matrix_count,
+            T ** matrix_list_batched_p;
+           cudaMalloc(sizeof(T *) * batch_count * matrix_count,
                     true);
-            T ** input_batched_p = (T **) malloc_wrapper(sizeof(T*) * batch_count, true);
-            T * input_batched  =  (T*) malloc_wrapper(sizeof(T) * batch_count * size_input, true);
-            T ** output_batched_p = (T **) malloc_wrapper(sizeof(T*) * batch_count, true);
-            T * output_batched  =  (T*) malloc_wrapper(sizeof(T) * batch_count * size_input, true);
-            T ** workspace_batched_p = (T **) malloc_wrapper(sizeof(T*) * batch_count, true);
-            T * workspace_batched  =  (T*) malloc_wrapper(sizeof(T) * batch_count * size_input, true);
+            T ** input_batched_p = (T **) cudaMalloc(sizeof(T*) * batch_count, true);
+            T * input_batched  =  (T*) cudaMalloc(sizeof(T) * batch_count * size_input, true);
+            T ** output_batched_p = (T **) cudaMalloc(sizeof(T*) * batch_count, true);
+            T * output_batched  =  (T*) cudaMalloc(sizeof(T) * batch_count * size_input, true);
+            T ** workspace_batched_p = (T **) cudaMalloc(sizeof(T*) * batch_count, true);
+            T * workspace_batched  =  (T*) cudaMalloc(sizeof(T) * batch_count * size_input, true);
             if(NULL == matrix_list_batched_p
                     || NULL == input_batched_p
                     || NULL == output_batched_p
@@ -109,7 +110,7 @@ namespace utils
                 return;
             }
             // Initialization of 2dimensions array
-            T *square_matrix = (T *) malloc_wrapper(sizeof(T) * matrix_size * matrix_size, true);
+            T *square_matrix = (T *) cudaMalloc(sizeof(T) * matrix_size * matrix_size, true);
             random_init_flatarray_device(matrix_list_batched, batch_count * matrix_count * matrix_size * matrix_size);
             init_array_pointer(matrix_list_batched_p, matrix_list_batched, batch_count * matrix_count, matrix_size * matrix_size);
             // Initializing 1dimension arrays

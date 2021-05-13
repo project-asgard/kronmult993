@@ -1,5 +1,3 @@
-#pragma once
-
 /*
  * converts row and col indices into a single index for a matrix store in col-major
  * `stride` is usually the number of rows of the matrix

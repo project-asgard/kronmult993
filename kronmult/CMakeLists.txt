@@ -24,15 +24,20 @@ else()
     message(WARNING "Building Kronmult without BLAS support.")
 endif()
 
+if (USE_GPU)
 set(KRONSRC
-        kronmult_openmp.hpp
         kronmult_gpu.hpp
-        # openMP
-        openmp/kronmult.hpp
-        openmp/linear_algebra.hpp
         # GPU
         gpu/kronmult.hpp
         gpu/gpu_operations.hpp)
+
+else()
+set(KRONSRC
+        kronmult_openmp.hpp
+        # openMP
+        openmp/kronmult.hpp
+        openmp/linear_algebra.hpp)
+endif()
 
 if (USE_GPU)
     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -arch sm_60 --compiler-options -fPIC --keep-device-functions")

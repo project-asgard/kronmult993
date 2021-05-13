@@ -5,6 +5,7 @@
  */
 
 #include <cstring>
+#include <cassert>
 
 #ifdef USE_GPU
     #include <cuda.h>
