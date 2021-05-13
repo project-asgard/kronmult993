@@ -3,6 +3,9 @@
 #include <omp.h>
 #include <openmp/kronmult.hpp>
 
+// change this to run the bench in another precision
+using Number = float;
+
 /*
  * runs a benchmark with the given parameters
  * `nb_distinct_outputs` modelizes the fact that most outputs are identical
@@ -25,25 +28,25 @@ long runBench(const int degree, const int dimension, const int grid_level, const
     // allocates a problem
     // we do not put data in the vectors/matrices as it doesn't matter here
     std::cout << "Starting allocation." << std::endl;
-    auto matrix_list_batched = new double*[batch_count * matrix_count];
-    auto input_batched = new double*[batch_count];
-    auto output_batched = new double*[batch_count];
-    auto workspace_batched = new double*[batch_count];
+    auto matrix_list_batched = new Number*[batch_count * matrix_count];
+    auto input_batched = new Number*[batch_count];
+    auto output_batched = new Number*[batch_count];
+    auto workspace_batched = new Number*[batch_count];
     // outputs that will be used
-    auto actual_output_batched = new double*[nb_distinct_outputs];
+    auto actual_output_batched = new Number*[nb_distinct_outputs];
     for(int batch = 0; batch < nb_distinct_outputs; batch++)
     {
-        actual_output_batched[batch] = new double[size_input];
+        actual_output_batched[batch] = new Number[size_input];
     }
     #pragma omp parallel for
     for(int batch = 0; batch < batch_count; batch++)
     {
         for(int mat = 0; mat < matrix_count; mat++)
         {
-            matrix_list_batched[batch * matrix_count + mat] = new double[matrix_size * matrix_stride];
+            matrix_list_batched[batch * matrix_count + mat] = new Number[matrix_size * matrix_stride];
         }
-        input_batched[batch] = new double[size_input];
-        workspace_batched[batch] = new double[size_input];
+        input_batched[batch] = new Number[size_input];
+        workspace_batched[batch] = new Number[size_input];
         // represents output vector reuse
         const int output_number = (batch * nb_distinct_outputs) / batch_count;
         output_batched[batch] = actual_output_batched[output_number];

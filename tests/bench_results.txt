@@ -2,6 +2,8 @@ tests run on a haswell node (64 cores, exclusive reservation)
 we use the MKL as our BLAS of choice
 we use the minimum of several runs as its the best representation of the actual computing time (noise is additive)
 
+-------------------- DOUBLE --------------------
+
 BLAS (min of 3 runs)
 toy: 3ms
 small: 7ms
@@ -40,3 +42,22 @@ medium: 5ms
 large: 8688ms
 realistic: 8623ms
 => speed similar to old no-blas version
+
+-------------------- DOUBLE --------------------
+
+BLAS (min of 3 runs)
+toy: 3ms
+small: 7ms
+medium: 7ms
+large: 2570ms
+realistic: 2531ms
+
+No BLAS (min of 3 runs)
+toy: 0ms
+small: 0ms
+medium: 5ms
+large: 3969ms
+realistic: 3874ms
+
+Old Kronmult (min of 1 runs)
+
