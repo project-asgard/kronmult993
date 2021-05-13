@@ -1,0 +1,3 @@
+[submodule "algo-origin/kronmult"]
+	path = algo-origin/kronmult
+	url = git@github.com:efdazedo/KRONMULT.git

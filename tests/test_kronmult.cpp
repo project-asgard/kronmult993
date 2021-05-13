@@ -6,6 +6,12 @@
 #include <openmp/kronmult.hpp>
 
 #include "utils.hpp"
+#include "kronmult1_xbatched.hpp"
+#include "kronmult2_xbatched.hpp"
+#include "kronmult3_xbatched.hpp"
+#include "kronmult4_xbatched.hpp"
+#include "kronmult5_xbatched.hpp"
+#include "kronmult6_xbatched.hpp"
 
 const size_t TOTAL_ITERATIONS = 1;
 
@@ -26,7 +32,7 @@ std::pair<double, double> test_kronmult_cpu(size_t size_input, size_t matrix_str
     {
 // kronmult_openmp::kronmult(matrix_count, matrix_size, matrix_list, matrix_stride, input,
 //                      size_input, output, workspace, transpose_workspace);
-        kronmult_openmp::kronmult_batched(matrix_count, matrix_size, matrix_list_batched,
+        kronmult_batched(matrix_count, matrix_size, matrix_list_batched,
                                           matrix_stride, input_batched, output_batched,
                                           workspace_batched, batch_count);
     }
@@ -107,7 +113,7 @@ std::pair<double, double> test_kronmult_cpu(size_t size_input, size_t matrix_str
     }
     // Matrix_size and degree are the same
 // TODO: plot time/FLOPS
-    T flops = std::pow(kronmult_openmp::pow_long(matrix_size, dimensions), 3.) * batch_count * TOTAL_ITERATIONS;
+    T flops = std::pow(pow_int(matrix_size, dimensions), 3.) * batch_count * TOTAL_ITERATIONS;
     T real_flops = std::pow(matrix_size, dimensions)* std::pow(matrix_size,2) * batch_count * TOTAL_ITERATIONS;
     T orig_flops = 12.*std::pow(matrix_size, dimensions+1) * batch_count * TOTAL_ITERATIONS;
     std::chrono::duration<T> diff = stop-start;
@@ -121,14 +127,14 @@ std::pair<double, double> test_kronmult_cpu(size_t size_input, size_t matrix_str
 #endif
     for(int i=0; i< matrix_count; i++)
     {
-        utils::free_wrapper(input_batched[i]);
-        utils::free_wrapper(output_batched[i]);
-        utils::free_wrapper(workspace_batched[i]);
-        utils::free_wrapper(matrix_list_batched[i]);
+        delete [] input_batched[i];
+        delete [] output_batched[i];
+        delete [] workspace_batched[i];
+        delete [] matrix_list_batched[i];
     }
-    utils::free_wrapper(matrix_list_batched);
-    utils::free_wrapper(output_batched);
-    utils::free_wrapper(workspace_batched);
+    delete [] matrix_list_batched;
+    delete [] output_batched;
+    delete [] workspace_batched;
     std::pair<double,double> result = {diff.count(), diff_origin.count()};
     return result;
 }
@@ -270,7 +276,7 @@ int main(int ac, char * av[]){
      * batch_count == degree * pow(2, level*dimension)
      * size_input == pow(degree, dimension)
      * */
-std:cerr << "degree" << ","
+    std::cerr << "degree" << ","
         << "grid_level" << ","
         << "dimensions" << ","
         << "batch_count" << ","
@@ -286,7 +292,7 @@ std:cerr << "degree" << ","
             for(size_t degree = 2; degree <=8; degree++)
             {
 
-                size_t batch_count = max(pow_int(2, grid_level*dimensions),pow_int(2, 13));
+                size_t batch_count = std::max(pow_int(2, grid_level*dimensions),pow_int(2, 13));
                 size_t matrix_size = degree;
                 size_t size_input = pow_int(degree, dimensions);
                 size_t matrix_count = dimensions;

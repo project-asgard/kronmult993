@@ -42,19 +42,19 @@ if (USE_GPU)
     set_source_files_properties(${KRONSRC} PROPERTIES LANGUAGE CUDA)
 endif ()
 
-add_library(kron SHARED ${KRONSRC})
-set_target_properties(kron PROPERTIES LINKER_LANGUAGE CXX)
+add_library(kronmult SHARED ${KRONSRC})
+set_target_properties(kronmult PROPERTIES LINKER_LANGUAGE CXX)
 if (USE_GPU)
     ## TODO: We want something more robust:
     ## TODO: reopen https://github.com/project-asgard/asgard/pull/307
     ## TODO: ideas https://gitlab.kitware.com/cmake/cmake/-/issues/21666
-    set_target_properties(kron PROPERTIES CUDA_ARCHITECTURES OFF)
-    set_target_properties(kron PROPERTIES CXX_STANDARD 17 CXX_EXTENSIONS OFF)
+    set_target_properties(kronmult PROPERTIES CUDA_ARCHITECTURES OFF)
+    set_target_properties(kronmult PROPERTIES CXX_STANDARD 17 CXX_EXTENSIONS OFF)
 else()
-    set_target_properties(kron PROPERTIES CXX_STANDARD 17 CXX_EXTENSIONS OFF)
+    set_target_properties(kronmult PROPERTIES CXX_STANDARD 17 CXX_EXTENSIONS OFF)
 endif ()
-target_compile_features(kron INTERFACE cxx_std_17)## INTERFACE or PUBLIC?
-target_include_directories(kron INTERFACE ./) ## INTERFACE or PUBLIC?
+target_compile_features(kronmult INTERFACE cxx_std_17)## INTERFACE or PUBLIC?
+target_include_directories(kronmult INTERFACE ./) ## INTERFACE or PUBLIC?
 
 #set(TESTSRC tests/test_kronmult6_xbatched.cpp)
 

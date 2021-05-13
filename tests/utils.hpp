@@ -7,7 +7,7 @@
 // Helper functions and utilities to work with CUDA
 #include <helper_cuda.h>
 #endif
-
+#include <kronmult_openmp.hpp>
 namespace utils
 {
 #ifdef USE_GPU
@@ -25,13 +25,13 @@ namespace utils
         {
             static bool first = true;
             if (first)
-                srand(NULL);
+                srand((size_t)NULL);
             first = false;
             for (size_t rowindex = 0; rowindex < nb_row_X; rowindex++)
             {
                 for(size_t colindex=0 ; colindex<nb_col_X; colindex++)
                 {
-                    X[kronmult_openmp::colmajor(rowindex, colindex, stride)] =
+                    X[colmajor(rowindex, colindex, stride)] =
                         static_cast<T>(random()) / static_cast<T>(INT64_MAX);
                 }
             }
@@ -39,7 +39,7 @@ namespace utils
 
     template<typename  T>
         void init_array_pointer(T ** X_p, T* X, 
-                size_t outer_size, size_t inner_size);
+                size_t outer_size, size_t inner_size)
         {
 #ifdef USE_GPU
             // GPU code
@@ -60,7 +60,7 @@ namespace utils
             {
                 for(size_t colindex=0 ; colindex<nb_col_X; colindex++)
                 {
-                    X[kronmult_openmp::colmajor(rowindex, colindex, stride)] = value;
+                    X[colmajor(rowindex, colindex, stride)] = value;
                 }
             }
         }
@@ -130,20 +130,20 @@ namespace utils
                 T *** workspace_batched_p, size_t batch_count, size_t matrix_count, size_t dimensions,
                 size_t size_input, size_t matrix_size, size_t matrix_stride, size_t grid_level)
         {
-            T ** matrix_list_batched = (T **) malloc_wrapper(sizeof(T *) * batch_count * matrix_count, false);
-            T ** input_batched = (T **) malloc_wrapper(sizeof(T*) * batch_count, false);
-            T ** output_batched = (T **) malloc_wrapper(sizeof(T*) * batch_count, false);
-            T ** workspace_batched = (T **) malloc_wrapper(sizeof(T*) * batch_count, false);
+            T ** matrix_list_batched = new T*[batch_count * matrix_count];
+            T ** input_batched = new T*[batch_count];
+            T ** output_batched = new T*[batch_count];
+            T ** workspace_batched = new T*[batch_count];
             if(NULL == matrix_list_batched
                     || NULL == input_batched
                     || NULL == output_batched
                     || NULL == workspace_batched)
             {
                 display_debug(matrix_size, size_input, matrix_stride, dimensions, grid_level, batch_count);
-                free_wrapper(input_batched);
-                free_wrapper(output_batched);
-                free_wrapper(workspace_batched);
-                free_wrapper(matrix_list_batched);
+                delete [] input_batched;
+                delete [] output_batched;
+                delete [] workspace_batched;
+                delete [] matrix_list_batched;
                 std::cerr << "Dynamic allocation failed." << std::endl;
                 return;
             }
@@ -151,15 +151,15 @@ namespace utils
             {
                 for(int matrix_count_index = 0; matrix_count_index < matrix_count; matrix_count_index++)
                 {
-                    T *square_matrix = (T *) malloc_wrapper(sizeof(T) * matrix_size * matrix_size);
+                    T *square_matrix = new T[matrix_size * matrix_size];
                     random_init(square_matrix, matrix_size, matrix_size, matrix_size);
                     matrix_list_batched[batchid * matrix_count + matrix_count_index] = square_matrix;
                 }
-                input_batched[batchid] = (T*) malloc_wrapper(sizeof(T) * size_input);
+                input_batched[batchid] = new T[size_input];
                 random_init(input_batched[batchid], size_input, 1, size_input); // tensor matrix_size ^ matrix_number
-                output_batched[batchid] = (T*) malloc_wrapper(sizeof(T) * size_input);
+                output_batched[batchid] = new T[size_input];
                 value_init<T>(output_batched[batchid], size_input, 1, size_input, 0.); // tensor
-                workspace_batched[batchid] = (T*) malloc_wrapper(sizeof(T) * size_input);
+                workspace_batched[batchid] = new T[size_input];
                 value_init<T>(workspace_batched[batchid], size_input, 1, size_input, 0.); // tensor
             }
             *matrix_list_batched_p = matrix_list_batched;
