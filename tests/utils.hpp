@@ -9,7 +9,7 @@
 #endif
 #include <cstdlib>
 #include <iostream>
-#include <kronmult_openmp.hpp>
+#include <openmp/linear_algebra.hpp>
 namespace utils
 {
 #ifdef USE_GPU
@@ -33,7 +33,7 @@ namespace utils
             {
                 for(size_t colindex=0 ; colindex<nb_col_X; colindex++)
                 {
-                    X[kronmult_openmp::colmajor(rowindex, colindex, stride)] =
+                    X[colmajor(rowindex, colindex, stride)] =
                         static_cast<T>(random()) / static_cast<T>(RAND_MAX);
                 }
             }
@@ -62,7 +62,7 @@ namespace utils
             {
                 for(size_t colindex=0 ; colindex<nb_col_X; colindex++)
                 {
-                    X[kronmult_openmp::colmajor(rowindex, colindex, stride)] = value;
+                    X[colmajor(rowindex, colindex, stride)] = value;
                 }
             }
         }
