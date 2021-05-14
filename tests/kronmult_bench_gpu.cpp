@@ -1,10 +1,21 @@
 #include <iostream>
 #include <chrono>
-#include <omp.h>
-#include <kronmult.hpp>
+#include <cuda.h>
+#include <cuda_runtime.h>
 
 // change this to run the bench in another precision
 using Number = double;
+
+/*
+ * allocates an array of the given size on the device
+ * similar to `new T[size]`
+ */
+template<typename T> T* cudaNew(size_t size)
+{
+    T* pointer;
+    cudaMalloc((void**)&pointer, sizeof(T) * size);
+    return pointer;
+}
 
 /*
  * runs a benchmark with the given parameters
@@ -30,25 +41,25 @@ long runBench(const int degree, const int dimension, const int grid_level, const
     // allocates a problem
     // we do not put data in the vectors/matrices as it doesn't matter here
     std::cout << "Starting allocation." << std::endl;
-    auto matrix_list_batched = new Number*[batch_count * matrix_count];
-    auto input_batched = new Number*[batch_count];
-    auto output_batched = new Number*[batch_count];
-    auto workspace_batched = new Number*[batch_count];
+    auto matrix_list_batched = cudaNew<Number*>(batch_count * matrix_count);
+    auto input_batched = cudaNew<Number*>(batch_count);
+    auto output_batched = cudaNew<Number*>(batch_count);
+    auto workspace_batched = cudaNew<Number*>(batch_count);
     // outputs that will be used
     auto actual_output_batched = new Number*[nb_distinct_outputs];
     for(int batch = 0; batch < nb_distinct_outputs; batch++)
     {
-        actual_output_batched[batch] = new Number[size_input];
+        actual_output_batched[batch] = cudaNew<Number>(size_input);
     }
     #pragma omp parallel for
     for(int batch = 0; batch < batch_count; batch++)
     {
         for(int mat = 0; mat < matrix_count; mat++)
         {
-            matrix_list_batched[batch * matrix_count + mat] = new Number[matrix_size * matrix_stride];
+            matrix_list_batched[batch * matrix_count + mat] = cudaNew<Number>(matrix_size * matrix_stride);
         }
-        input_batched[batch] = new Number[size_input];
-        workspace_batched[batch] = new Number[size_input];
+        input_batched[batch] = cudaNew<Number>(size_input);
+        workspace_batched[batch] = cudaNew<Number>(size_input);
         // represents output vector reuse
         const int output_number = (batch * nb_distinct_outputs) / batch_count;
         output_batched[batch] = actual_output_batched[output_number];
@@ -70,17 +81,17 @@ long runBench(const int degree, const int dimension, const int grid_level, const
     {
         for(int mat = 0; mat < matrix_count; mat++)
         {
-            delete[] matrix_list_batched[batch * matrix_count + mat];
+            cudaFree(matrix_list_batched[batch * matrix_count + mat]);
         }
-        delete[] input_batched[batch];
-        delete[] workspace_batched[batch];
-        if(batch < nb_distinct_outputs) delete[] actual_output_batched[batch];
+        cudaFree(input_batched[batch]);
+        cudaFree(workspace_batched[batch]);
+        if(batch < nb_distinct_outputs) cudaFree(actual_output_batched[batch]);
     }
-    delete[] actual_output_batched;
-    delete[] matrix_list_batched;
-    delete[] input_batched;
-    delete[] output_batched;
-    delete[] workspace_batched;
+    cudaFree(actual_output_batched);
+    cudaFree(matrix_list_batched);
+    cudaFree(input_batched);
+    cudaFree(output_batched);
+    cudaFree(workspace_batched);
 
     return milliseconds;
 }
@@ -90,10 +101,7 @@ long runBench(const int degree, const int dimension, const int grid_level, const
  */
 int main()
 {
-    std::cout << "Starting benchmark (" << omp_get_num_procs() << " procs)." << std::endl;
-    #ifdef KRONMULT_USE_BLAS
-        std::cout << "BLAS detected properly." << std::endl;
-    #endif
+    std::cout << "Starting benchmark (GPU)." << std::endl;
 
     // running the benchmarks
     auto toy = runBench(4, 1, 2, "toy");
