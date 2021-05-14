@@ -1,4 +1,6 @@
 #pragma once
+#include <cuda.h>
+#include <cuda_runtime.h>
 #include "linear_algebra.cuh"
 
 /*
@@ -6,10 +8,10 @@
  * does not care about performances
  * does not use std::pow as it does an implicit float conversion that could lead to rounding errors for high numbers
  */
-__device__ int pow_int(const int number, const int power)
+__device__ int cuda_pow_int(const int number, const int power)
 {
     if(power == 0) return 1;
-    return number * pow_int(number, power-1);
+    return number * cuda_pow_int(number, power-1);
 }
 
 /*
@@ -26,7 +28,7 @@ __device__ int pow_int(const int number, const int power)
  * the matrices should be stored in col-major order
  */
 template<typename T>
-__global__ void kronmult(const int matrix_count, const int matrix_size, T const * const matrix_list[], const int matrix_stride,
+__global__ void cuda_kronmult(const int matrix_count, const int matrix_size, T const * const matrix_list[], const int matrix_stride,
               T input[], const int size_input,
               T output[],
               T workspace[], T transpose_workspace[])
@@ -43,7 +45,8 @@ __global__ void kronmult(const int matrix_count, const int matrix_size, T const 
         // swap `input` and `workspace` such that `input` contains once again the input
         // note that, while they have the same size flattened, the shape (nb_columns and nb_rows) of `input` and `workspace` are different
         // this is on purpose and equivalent to a reshape operation that is actually needed by the algorithm
-        std::swap(input, workspace);
+        // TODO (no swap in cuda)
+        //std::swap(input, workspace);
     }
 
     // reduce in a threadsafe way
@@ -67,13 +70,13 @@ __global__ void kronmult(const int matrix_count, const int matrix_size, T const 
  * the matrices should be stored in col-major order
  */
 template<typename T>
-__global__ void kronmult_batched(const int matrix_count, const int matrix_size, T const * const matrix_list_batched[], const int matrix_stride,
+__global__ void cuda_kronmult_batched(const int matrix_count, const int matrix_size, T const * const matrix_list_batched[], const int matrix_stride,
                       T* input_batched[],
                       T* output_batched[], T* workspace_batched[],
                       const int nb_batch)
 {
     // numbers of elements in the input vector
-    int size_input = pow_int(matrix_size, matrix_count);
+    int size_input = cuda_pow_int(matrix_size, matrix_count);
 
     // workspace that will be used to store matrix transpositions
     // TODO one per thread
@@ -88,8 +91,19 @@ __global__ void kronmult_batched(const int matrix_count, const int matrix_size, 
         T* output = output_batched[i];
         T* workspace = workspace_batched[i];
         // result is stored in `workspace` if `matrix_count` is odd and `input` if it is even
-        kronmult<T>(matrix_count, matrix_size, matrix_list, matrix_stride, input, size_input, output, workspace, transpose_workspace);
+        cuda_kronmult<T>(matrix_count, matrix_size, matrix_list, matrix_stride, input, size_input, output, workspace, transpose_workspace);
     }
 
     delete[] transpose_workspace;
+}
+
+// TODO just for tests
+template<typename T>
+void kronmult_batched(const int matrix_count, const int matrix_size, T const * const matrix_list_batched[], const int matrix_stride,
+                           T* input_batched[],
+                           T* output_batched[], T* workspace_batched[],
+                           const int nb_batch)
+{
+    cuda_kronmult_batched<1,1>(matrix_count, matrix_size, matrix_list_batched, matrix_stride,
+                                input_batched, output_batched, workspace_batched, nb_batch);
 }

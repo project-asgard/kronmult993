@@ -9,7 +9,5 @@ set(SOURCES
         linear_algebra.cuh)
 
 add_library(kronmult_gpu ${SOURCES})
-
 set_target_properties(kronmult_gpu PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
-
-# TODO can we make the lib INTERFACE?
+target_include_directories(kronmult_gpu PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

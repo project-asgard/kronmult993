@@ -1,7 +1,6 @@
 #include <iostream>
 #include <chrono>
-#include <cuda.h>
-#include <cuda_runtime.h>
+#include <kronmult.cuh>
 
 // change this to run the bench in another precision
 using Number = double;
