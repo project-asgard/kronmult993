@@ -1,8 +1,4 @@
-#ifdef USE_GPU
 #include "utils_gpu.hpp"
-#else
-#include "utils.hpp"
-#endif
 #include <cassert>
 #include <cstdlib>
 
@@ -20,15 +16,9 @@ void test_utils()
     size_t matrix_size = 8;
     size_t matrix_stride = 8;
     size_t grid_level = 4;
-#ifndef USE_GPU
-    initialize_pointers_host( &matrix_list_batched_p, &input_batched_p, &output_batched_p,
-                                     &workspace_batched_p, batch_count, matrix_count, dimensions,
-                                     size_input, matrix_size, matrix_stride, grid_level);
-#else
-    initialize_pointers_device( &matrix_list_batched_p, &input_batched_p, &output_batched_p,
-                                     &workspace_batched_p, batch_count, matrix_count, dimensions,
-                                     size_input, matrix_size, matrix_stride, grid_level);
-#endif
+    initialize_pointers_device( &matrix_list_batched_p);//, &input_batched_p, &output_batched_p,
+    //                                 &workspace_batched_p, batch_count, matrix_count, dimensions,
+    //                                 size_input, matrix_size, matrix_stride, grid_level);
     assert(matrix_list_batched_p != nullptr);
     assert(input_batched_p != nullptr);
     assert(output_batched_p != nullptr);

@@ -1,7 +1,17 @@
-#include "utils.hpp"
+#include "utils_gpu.hpp"
+// Generate random numbers with Cuda
+#include <curand.h>
+// CUDA runtime
+#include <cuda_runtime.h>
+// Helper functions and utilities to work with CUDA
+//#include <helper_cuda.h>
 
-template <typename T>
-void  random_init_flatarray_device(T *A, size_t size)
+void test(void){
+}
+
+    template <typename T>
+__host__
+void random_init_flatarray_device(T *A, size_t size)
 {
     curandGenerator_t prng;
     curandCreateGenerator (&prng, CURAND_RNG_PSEUDO_DEFAULT);
@@ -9,7 +19,8 @@ void  random_init_flatarray_device(T *A, size_t size)
     curandGenerateUniformDouble(prng, A, size);
 }
 
-template <typename T>
+    template <typename T>
+__global__
 void init_array_pointer_kernel(T ** X_p, T* X,
         size_t outer_size, size_t inner_size)
 {
@@ -18,19 +29,27 @@ void init_array_pointer_kernel(T ** X_p, T* X,
         X_p[threadId] = &(X + threadId*inner_size);
 }
 
-template<typename  T>
+    template<typename  T>
+__host__
 void init_array_pointer_device(T ** X_p, T* X,
-                               size_t outer_size, size_t inner_size)
+        size_t outer_size, size_t inner_size)
 {
     // GPU code
     constexpr size_t block_size = 128;
     constexpr size_t warp_size = 32;
-    init_array_pointer_kernel<<<block_size, warp_size>>>(X_p, X, outer_size, inner_size);
+    init_array_pointer_kernel <<<block_size, warp_size>>> (X_p, X, outer_size, inner_size);
 }
-template<typename T>
+
+template<>
+__host__
+void initialize_pointers_device( double *** matrix_list_batched_pp){
+}
+/*
+    template<typename T>
+__host__
 void initialize_pointers_device( T *** matrix_list_batched_pp, T *** input_batched_pp, T *** output_batched_pp,
-                                 T *** workspace_batched_pp, size_t batch_count, size_t matrix_count, size_t dimensions,
-                                 size_t size_input, size_t matrix_size, size_t matrix_stride, size_t grid_level)
+        T *** workspace_batched_pp, size_t batch_count, size_t matrix_count, size_t dimensions,
+        size_t size_input, size_t matrix_size, size_t matrix_stride, size_t grid_level)
 {
     // TODO: should bne changed in template (device == true) function.
     T ** matrix_list_batched_p;
@@ -48,11 +67,11 @@ void initialize_pointers_device( T *** matrix_list_batched_pp, T *** input_batch
     cudaMalloc(&workspace_batched_p, sizeof(T*) * batch_count);
     cudaMalloc(&workspace_batched, sizeof(T) * batch_count * size_input);
     if(NULL == matrix_list_batched_p
-       || NULL == input_batched_p
-       || NULL == output_batched_p
-       || NULL == workspace_batched_p)
+            || NULL == input_batched_p
+            || NULL == output_batched_p
+            || NULL == workspace_batched_p)
     {
-        utils::display_debug(matrix_size, size_input, matrix_stride, dimensions, grid_level, batch_count);
+        //utils::display_debug(matrix_size, size_input, matrix_stride, dimensions, grid_level, batch_count);
         cudaFree(input_batched_p);
         cudaFree(output_batched_p);
         cudaFree(workspace_batched_p);
@@ -75,4 +94,4 @@ void initialize_pointers_device( T *** matrix_list_batched_pp, T *** input_batch
     *input_batched_pp       = input_batched_p;
     *output_batched_pp      = output_batched_p;
     *workspace_batched_pp   = workspace_batched_p;
-}
+}*/
