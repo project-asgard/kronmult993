@@ -14,7 +14,8 @@ long runBench(const int degree, const int dimension, const int grid_level, const
 {
     // Kronmult parameters
     // TODO find proper formula for batch count, current one generates batches too large to be allocated without the min
-    const int batch_count = std::min(pow_int(2,13), pow_int(2, grid_level) * pow_int(grid_level, dimension-1));
+    // TODO go back to max 2^13 if possible (does not fit on GPU)
+    const int batch_count = std::min(pow_int(2,10), pow_int(2, grid_level) * pow_int(grid_level, dimension-1));
     const int matrix_size = degree;
     const int matrix_count = dimension;
     const int size_input = pow_int(matrix_size, matrix_count);

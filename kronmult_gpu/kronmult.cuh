@@ -1,6 +1,7 @@
 #pragma once
 #include <cuda.h>
 #include <cuda_runtime.h>
+#include <device_launch_parameters.h>
 #include "linear_algebra.cuh"
 
 /*
@@ -71,14 +72,15 @@ __global__ void cuda_kronmult_batched(const int matrix_count, const int matrix_s
                                       T* output_batched[], T* workspace_batched[],
                                       const int nb_batch)
 {
-    // TODO paralelise by picking batch as a function of thread index instead of iterating
-    for(int i=0; i < nb_batch; i++)
+    // each thread get a single batch
+    const int batchId = blockIdx.x * blockDim.x + threadIdx.x;
+    if(batchId < nb_batch)
     {
         // computes kronmult
-        T const * const * matrix_list = &matrix_list_batched[i*matrix_count];
-        T* input = input_batched[i];
-        T* output = output_batched[i];
-        T* workspace = workspace_batched[i];
+        T const * const * matrix_list = &matrix_list_batched[batchId*matrix_count];
+        T* input = input_batched[batchId];
+        T* output = output_batched[batchId];
+        T* workspace = workspace_batched[batchId];
         // result is stored in `workspace` if `matrix_count` is odd and `input` if it is even
         cuda_kronmult<T>(matrix_count, matrix_size, matrix_list, matrix_stride, input, size_input, output, workspace);
     }
