@@ -61,21 +61,25 @@ __device__ void cuda_kronmult(const int matrix_count, const int matrix_size, T c
 template<typename T>
 __global__ void cuda_kronmult_thread(const int matrix_count, const int matrix_size, T const * const matrix_list_batched[], const int matrix_stride,
                                       T* input_batched[], const int size_input,
-                                      T* output_batched[], T* workspace_batched[], T transpose_workspace_batched[],
+                                      T* output_batched[], T* workspace_batched[],
                                       const int nb_batch)
 {
     // each thread get a single batch
     const int batchId = blockIdx.x * blockDim.x + threadIdx.x;
+
     if(batchId < nb_batch)
     {
-        // computes kronmult
+        // gets the inputs for the algorithm
         T const * const * matrix_list = &matrix_list_batched[batchId*matrix_count];
         T* input = input_batched[batchId];
         T* output = output_batched[batchId];
         T* workspace = workspace_batched[batchId];
-        T* transpose_workspace = &transpose_workspace_batched[threadIdx.x*matrix_size*matrix_size];
+        T* transpose_workspace = new T[matrix_size*matrix_size];
+        // computes kronmult
         // result is stored in `workspace` if `matrix_count` is odd and `input` if it is even
         cuda_kronmult<T>(matrix_count, matrix_size, matrix_list, matrix_stride, input, size_input, output, workspace, transpose_workspace);
+        // free memory
+        delete[] transpose_workspace;
     }
 }
 
@@ -99,13 +103,9 @@ __host__ cudaError cuda_kronmult_batched(const int matrix_count, const int matri
     if(nb_batch < threadsPerBlock) threadsPerBlock = nb_batch;
     unsigned int nbBlocks = (nb_batch + threadsPerBlock - 1) / threadsPerBlock; // ceil(nb_batch/threadsPerBlock)
 
-    // allocate workspace for transposition (just enough for a single block)
-    T* transpose_workspace_batched;
-    cudaMalloc((void**)&transpose_workspace_batched, sizeof(T) * (matrix_size*matrix_size) * threadsPerBlock);
-
     // paralelize on batch elements
     cuda_kronmult_thread<<<nbBlocks, threadsPerBlock>>>(matrix_count, matrix_size, matrix_list_batched, matrix_stride,
-                                                        input_batched, size_input, output_batched, workspace_batched, transpose_workspace_batched, nb_batch);
+                                                        input_batched, size_input, output_batched, workspace_batched, nb_batch);
 
     // waits for kernel to succeed and returns error code
     return cudaDeviceSynchronize();

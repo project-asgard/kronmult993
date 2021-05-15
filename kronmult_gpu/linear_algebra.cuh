@@ -1,4 +1,5 @@
 #pragma once
+#include <cstring>
 #include <cuda_runtime.h>
 
 /*
@@ -43,8 +44,8 @@ __device__ void transpose(const T input[], T output[], const int matrix_size, co
  */
 template<typename T>
 __device__ void multiply_transpose(const T X[], const int nb_col_X,
-                        const T M[], const int size_M, const int stride_M,
-                        T Y[], T M_transposed[])
+                                   const T M[], const int size_M, const int stride_M,
+                                   T Y[], T M_transposed[])
 {
     // transpose the matrix to get a better alignement
     transpose(M, M_transposed, size_M, stride_M);

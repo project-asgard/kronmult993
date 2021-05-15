@@ -10,7 +10,7 @@ void checkCudaErrorCode(const cudaError errorCode, const std::string& functionNa
 {
     if(errorCode != cudaSuccess)
     {
-        throw std::runtime_error(functionName + ": failed with CUDA error " + cudaGetErrorString(errorCode));
+        throw std::runtime_error(functionName + ": " + cudaGetErrorString(errorCode));
     }
 }
 
