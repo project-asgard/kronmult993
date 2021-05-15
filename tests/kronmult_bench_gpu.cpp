@@ -39,9 +39,9 @@ long runBench(const int degree, const int dimension, const int grid_level, const
     // runs kronmult several times and displays the average runtime
     std::cout << "Starting Kronmult" << std::endl;
     auto start = std::chrono::high_resolution_clock::now();
-    const int errorCode = kronmult_batched(matrix_count, matrix_size, matrix_list_batched.rawPointer,
-                                     matrix_stride, input_batched.rawPointer, output_batched.rawPointer,
-                                     workspace_batched.rawPointer, batch_count);
+    const cudaError errorCode = kronmult_batched(matrix_count, matrix_size, matrix_list_batched.rawPointer,
+                                                 matrix_stride, input_batched.rawPointer, output_batched.rawPointer,
+                                                 workspace_batched.rawPointer, batch_count);
     auto stop = std::chrono::high_resolution_clock::now();
     auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count();
     std::cout << "Runtime: " << milliseconds << "ms" << std::endl;
@@ -55,17 +55,11 @@ long runBench(const int degree, const int dimension, const int grid_level, const
  */
 int main()
 {
-    // TODO clean up
-    // see https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__TYPES.html#group__CUDART__TYPES_1g3f51e3575c2178246db0a94a430e0038
-    // https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__DEVICE.html
-    int count = 0;
-    cudaGetDeviceCount(&count);
-    std::cout << "nb cuda compatible devices:" << count << std::endl;
-    const int errorCode = cudaSetDevice(0);
-    checkCudaErrorCode(errorCode, "cudaSetDevice");
+    // gets basic information on the cuda device
     cudaDeviceProp deviceProp;
-    cudaGetDeviceProperties(&deviceProp, 0);
-    std::cout << "Starting benchmark (GPU version " << deviceProp.major << '.' << deviceProp.minor << ")." << std::endl;
+    const cudaError errorCode = cudaGetDeviceProperties(&deviceProp, 0);
+    checkCudaErrorCode(errorCode, "cudaSetDevice");
+    std::cout << "Starting benchmark (GPU compatible " << deviceProp.major << '.' << deviceProp.minor << ")." << std::endl;
 
     // running the benchmarks
     auto toy = runBench(4, 1, 2, "toy");

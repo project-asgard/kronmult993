@@ -9,7 +9,7 @@ __host__ int pow_int(const int number, const int power)
 
 // TODO define for floats
 template<>
-__host__ int kronmult_batched<double>(const int matrix_count, const int matrix_size, double const * const matrix_list_batched[], const int matrix_stride,
+__host__ cudaError kronmult_batched<double>(const int matrix_count, const int matrix_size, double const * const matrix_list_batched[], const int matrix_stride,
                                        double* input_batched[], double* output_batched[], double* workspace_batched[], const int nb_batch)
 {
     // numbers of elements in the input vector
