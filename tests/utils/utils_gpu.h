@@ -1,6 +1,18 @@
 #pragma once
 #include <vector>
+#include <stdexcept>
 #include <cuda.h>
+
+/*
+ * throws an exeption if an errorCode is meet
+ */
+void checkCudaErrorCode(int errorCode, std::string functionName)
+{
+    if(errorCode != 0)
+    {
+        throw std::runtime_error(functionName + ": failed with CUDA error code " + std::to_string(errorCode));
+    }
+}
 
 /*
  * allocates an array of the given size on the device
@@ -10,7 +22,8 @@
 template<typename T> T* cudaNew(size_t size)
 {
     T* pointer;
-    cudaMalloc((void**)&pointer, sizeof(T) * size);
+    const int errorCode = cudaMalloc((void**)&pointer, sizeof(T) * size);
+    checkCudaErrorCode(errorCode, "cudaMalloc");
     return pointer;
 }
 
@@ -33,7 +46,8 @@ class DeviceArray
     // releases the memory
     ~DeviceArray()
     {
-        cudaFree(rawPointer);
+        const int errorCode = cudaFree(rawPointer);
+        checkCudaErrorCode(errorCode, "cudaFree (~DeviceArray)");
     }
 };
 
@@ -58,20 +72,23 @@ class DeviceArrayBatch
             batchRawPointers[i] = cudaNew<T>(array_sizes);
         }
         // copy the pointers to batch elements on device
-        rawPointer = cudaNew<T*>(array_sizes);
-        cudaMemcpy(rawPointer, batchRawPointers.data(), nb_arrays, cudaMemcpyHostToDevice);
+        rawPointer = cudaNew<T*>(nb_arrays);
+        const int errorCode = cudaMemcpy(rawPointer, batchRawPointers.data(), nb_arrays * sizeof(T*), cudaMemcpyHostToDevice);
+        checkCudaErrorCode(errorCode, "cudaMemcpy (DeviceArrayBatch)");
     }
 
     // releases the memory
     ~DeviceArrayBatch()
     {
         // frees the batch elements
-        for(auto ptr: batchRawPointers)
+        for(T* ptr: batchRawPointers)
         {
-            cudaFree(ptr);
+            const int errorCode = cudaFree(ptr);
+            checkCudaErrorCode(errorCode, "cudaFree (~DeviceArrayBatch[])");
         }
         // free the array of batch elements
-        cudaFree(rawPointer);
+        const int errorCode = cudaFree(rawPointer);
+        checkCudaErrorCode(errorCode, "cudaFree (~DeviceArrayBatch)");
     }
 };
 
@@ -105,19 +122,22 @@ class DeviceArrayBatch_withRepetition
             batchRawPointers_withRepetition[i] = batchRawPointers[ptr_index];
         }
         // copy the pointers to batch elements on device
-        rawPointer = cudaNew<T*>(array_sizes);
-        cudaMemcpy(rawPointer, batchRawPointers_withRepetition.data(), nb_arrays, cudaMemcpyHostToDevice);
+        rawPointer = cudaNew<T*>(nb_arrays);
+        const int errorCode = cudaMemcpy(rawPointer, batchRawPointers_withRepetition.data(), nb_arrays * sizeof(T*), cudaMemcpyHostToDevice);
+        checkCudaErrorCode(errorCode, "cudaMemcpy (DeviceArrayBatch_withRepetition)");
     }
 
     // releases the memory
     ~DeviceArrayBatch_withRepetition()
     {
         // frees the batch elements
-        for(auto ptr: batchRawPointers)
+        for(T* ptr: batchRawPointers)
         {
-            cudaFree(ptr);
+            const int errorCode = cudaFree(ptr);
+            checkCudaErrorCode(errorCode, "cudaFree (~DeviceArrayBatch_withRepetition[])");
         }
         // free the array of batch elements
-        cudaFree(rawPointer);
+        const int errorCode = cudaFree(rawPointer);
+        checkCudaErrorCode(errorCode, "cudaFree (~DeviceArrayBatch_withRepetition)");
     }
 };
