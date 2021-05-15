@@ -1,5 +1,4 @@
 #include "kronmult.cuh"
-#include "stdio.h"
 
 /*
  * computes number^power for integers
