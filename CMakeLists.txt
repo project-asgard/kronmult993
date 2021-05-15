@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
+project(kronmult LANGUAGES CUDA CXX)
 
 # add kronmult implementations
 add_subdirectory(kronmult_omp)
