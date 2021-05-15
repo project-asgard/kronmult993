@@ -9,11 +9,7 @@
  * does not use std::pow as it does an implicit float conversion that could lead to rounding errors for high
  * numbers
  */
-__device__ int cuda_pow_int(const int number, const int power)
-{
-    if(power == 0) return 1;
-    return number * cuda_pow_int(number, power-1);
-}
+__host__ int pow_int(const int number, const int power);
 
 /*
  * Computes output += kron(matrix_list) * input
@@ -29,10 +25,9 @@ __device__ int cuda_pow_int(const int number, const int power)
  * the matrices should be stored in col-major order
  */
 template<typename T>
-__global__ void cuda_kronmult(const int matrix_count, const int matrix_size, T const * const matrix_list[], const int matrix_stride,
+__device__ void cuda_kronmult(const int matrix_count, const int matrix_size, T const * const matrix_list[], const int matrix_stride,
               T input[], const int size_input,
-              T output[],
-              T workspace[], T transpose_workspace[])
+              T output[], T workspace[])
 {
     // how many column should `input` have for the multiplications to be legal
     const int nb_col_input = size_input / matrix_size;
@@ -42,7 +37,7 @@ __global__ void cuda_kronmult(const int matrix_count, const int matrix_size, T c
     {
         // takes `matrix` into account and put the result in `workspace` (use `output` as a workspace if needed)
         T const * const matrix = matrix_list[i];
-        multiply_transpose<T>(input, nb_col_input, matrix, matrix_size, matrix_stride, workspace, transpose_workspace);
+        multiply_transpose<T>(input, nb_col_input, matrix, matrix_size, matrix_stride, workspace);
         // swap `input` and `workspace` such that `input` contains once again the input
         // note that, while they have the same size flattened, the shape (nb_columns and nb_rows) of `input` and `workspace` are different
         // this is on purpose and equivalent to a reshape operation that is actually needed by the algorithm
@@ -72,17 +67,10 @@ __global__ void cuda_kronmult(const int matrix_count, const int matrix_size, T c
  */
 template<typename T>
 __global__ void cuda_kronmult_batched(const int matrix_count, const int matrix_size, T const * const matrix_list_batched[], const int matrix_stride,
-                                      T* input_batched[],
+                                      T* input_batched[], const int size_input,
                                       T* output_batched[], T* workspace_batched[],
                                       const int nb_batch)
 {
-    // numbers of elements in the input vector
-    int size_input = cuda_pow_int(matrix_size, matrix_count);
-
-    // workspace that will be used to store matrix transpositions
-    // TODO one per thread
-    T* transpose_workspace = new T[matrix_size*matrix_size];
-
     // TODO paralelise
     for(int i=0; i < nb_batch; i++)
     {
@@ -92,8 +80,17 @@ __global__ void cuda_kronmult_batched(const int matrix_count, const int matrix_s
         T* output = output_batched[i];
         T* workspace = workspace_batched[i];
         // result is stored in `workspace` if `matrix_count` is odd and `input` if it is even
-        cuda_kronmult<T>(matrix_count, matrix_size, matrix_list, matrix_stride, input, size_input, output, workspace, transpose_workspace);
+        cuda_kronmult<T>(matrix_count, matrix_size, matrix_list, matrix_stride, input, size_input, output, workspace);
     }
-
-    delete[] transpose_workspace;
 }
+
+/*
+ * Calls the cuda kernel with proper thread parameters.
+ * This function expects its inputs to already be on the device (GPU).
+ * needs to be in defined in a .cu file for <<<>>>
+ */
+template<typename T>
+__host__ void kronmult_batched(const int matrix_count, const int matrix_size, T const * const matrix_list_batched[], const int matrix_stride,
+                      T* input_batched[],
+                      T* output_batched[], T* workspace_batched[],
+                      const int nb_batch);

@@ -1,6 +1,6 @@
 #include <iostream>
 #include <chrono>
-#include <kronmult.h>
+#include <kronmult.cuh>
 
 // change this to run the bench in another precision
 using Number = double;
@@ -14,17 +14,6 @@ template<typename T> T* cudaNew(size_t size)
     T* pointer;
     cudaMalloc((void**)&pointer, sizeof(T) * size);
     return pointer;
-}
-
-/*
- * computes number^power for integers
- * does not care about performances
- * does not use std::pow as it does an implicit float conversion that could lead to rounding errors for high numbers
- */
-int pow_int(const int number, const int power)
-{
-    if(power == 0) return 1;
-    return number * pow_int(number, power-1);
 }
 
 /*
