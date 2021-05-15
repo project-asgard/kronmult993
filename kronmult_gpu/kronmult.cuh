@@ -90,7 +90,7 @@ __global__ void cuda_kronmult_batched(const int matrix_count, const int matrix_s
  * needs to be in defined in a .cu file for <<<>>>
  */
 template<typename T>
-__host__ void kronmult_batched(const int matrix_count, const int matrix_size, T const * const matrix_list_batched[], const int matrix_stride,
+__host__ int kronmult_batched(const int matrix_count, const int matrix_size, T const * const matrix_list_batched[], const int matrix_stride,
                       T* input_batched[],
                       T* output_batched[], T* workspace_batched[],
                       const int nb_batch);

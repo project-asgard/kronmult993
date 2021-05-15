@@ -38,9 +38,11 @@ long runBench(const int degree, const int dimension, const int grid_level, const
     // runs kronmult several times and displays the average runtime
     std::cout << "Starting Kronmult" << std::endl;
     auto start = std::chrono::high_resolution_clock::now();
-    kronmult_batched(matrix_count, matrix_size, matrix_list_batched.rawPointer,
+    int errorCode = kronmult_batched(matrix_count, matrix_size, matrix_list_batched.rawPointer,
                      matrix_stride, input_batched.rawPointer, output_batched.rawPointer,
                      workspace_batched.rawPointer, batch_count);
+    // TODO seem to be failing with a no GPU (100) error code
+    std::cout << "errorCode:" << errorCode << " (success:" << cudaSuccess << ')' << std::endl;
     auto stop = std::chrono::high_resolution_clock::now();
     auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count();
     std::cout << "Runtime: " << milliseconds << "ms" << std::endl;
