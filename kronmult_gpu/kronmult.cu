@@ -16,13 +16,17 @@ __host__ int kronmult_batched<double>(const int matrix_count, const int matrix_s
     int size_input = pow_int(matrix_size, matrix_count);
 
     // split batches into blocks with a maximum of threads in each
-    unsigned int threadsPerBlock = 1024; // aximum possible TODO automatize
+    unsigned int threadsPerBlock = 1024; // maximum possible TODO automatize TODO should be multiple of 32
     if(nb_batch < threadsPerBlock) threadsPerBlock = nb_batch;
     unsigned int nbBlocks = (nb_batch + threadsPerBlock - 1) / threadsPerBlock; // ceil(nb_batch/threadsPerBlock)
 
+    // allocate workspace for transposition (just enough for a single block)
+    double* transpose_workspace_batched;
+    cudaMalloc((void**)&transpose_workspace_batched, sizeof(double) * (matrix_size*matrix_size) * threadsPerBlock);
+
     // paralelize on batch elements
     cuda_kronmult_batched<<<nbBlocks, threadsPerBlock>>>(matrix_count, matrix_size, matrix_list_batched, matrix_stride,
-                                    input_batched, size_input, output_batched, workspace_batched, nb_batch);
+                                    input_batched, size_input, output_batched, workspace_batched, transpose_workspace_batched, nb_batch);
 
     // wait for kernel to succeed and returns error code (!= 0 => problem)
     return cudaDeviceSynchronize();

@@ -28,7 +28,7 @@ __host__ int pow_int(const int number, const int power);
 template<typename T>
 __device__ void cuda_kronmult(const int matrix_count, const int matrix_size, T const * const matrix_list[], const int matrix_stride,
               T input[], const int size_input,
-              T output[], T workspace[])
+              T output[], T workspace[], T transpose_workspace[])
 {
     // how many column should `input` have for the multiplications to be legal
     const int nb_col_input = size_input / matrix_size;
@@ -38,7 +38,7 @@ __device__ void cuda_kronmult(const int matrix_count, const int matrix_size, T c
     {
         // takes `matrix` into account and put the result in `workspace` (use `output` as a workspace if needed)
         T const * const matrix = matrix_list[i];
-        multiply_transpose<T>(input, nb_col_input, matrix, matrix_size, matrix_stride, workspace);
+        multiply_transpose<T>(input, nb_col_input, matrix, matrix_size, matrix_stride, workspace, transpose_workspace);
         // swap `input` and `workspace` such that `input` contains once again the input
         // note that, while they have the same size flattened, the shape (nb_columns and nb_rows) of `input` and `workspace` are different
         // this is on purpose and equivalent to a reshape operation that is actually needed by the algorithm
@@ -69,7 +69,7 @@ __device__ void cuda_kronmult(const int matrix_count, const int matrix_size, T c
 template<typename T>
 __global__ void cuda_kronmult_batched(const int matrix_count, const int matrix_size, T const * const matrix_list_batched[], const int matrix_stride,
                                       T* input_batched[], const int size_input,
-                                      T* output_batched[], T* workspace_batched[],
+                                      T* output_batched[], T* workspace_batched[], T transpose_workspace_batched[],
                                       const int nb_batch)
 {
     // each thread get a single batch
@@ -81,8 +81,9 @@ __global__ void cuda_kronmult_batched(const int matrix_count, const int matrix_s
         T* input = input_batched[batchId];
         T* output = output_batched[batchId];
         T* workspace = workspace_batched[batchId];
+        T* transpose_workspace = &transpose_workspace_batched[threadIdx.x*matrix_size*matrix_size];
         // result is stored in `workspace` if `matrix_count` is odd and `input` if it is even
-        cuda_kronmult<T>(matrix_count, matrix_size, matrix_list, matrix_stride, input, size_input, output, workspace);
+        cuda_kronmult<T>(matrix_count, matrix_size, matrix_list, matrix_stride, input, size_input, output, workspace, transpose_workspace);
     }
 }
 
