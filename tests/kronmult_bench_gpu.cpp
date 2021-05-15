@@ -1,6 +1,6 @@
 #include <iostream>
 #include <chrono>
-#include <kronmult.cuh>
+#include <kronmult.h>
 
 // change this to run the bench in another precision
 using Number = double;
@@ -14,6 +14,17 @@ template<typename T> T* cudaNew(size_t size)
     T* pointer;
     cudaMalloc((void**)&pointer, sizeof(T) * size);
     return pointer;
+}
+
+/*
+ * computes number^power for integers
+ * does not care about performances
+ * does not use std::pow as it does an implicit float conversion that could lead to rounding errors for high numbers
+ */
+int pow_int(const int number, const int power)
+{
+    if(power == 0) return 1;
+    return number * pow_int(number, power-1);
 }
 
 /*
@@ -50,6 +61,7 @@ long runBench(const int degree, const int dimension, const int grid_level, const
     {
         actual_output_batched[batch] = cudaNew<Number>(size_input);
     }
+    //TODO can you actually ut values in device arrays like that?
     #pragma omp parallel for
     for(int batch = 0; batch < batch_count; batch++)
     {

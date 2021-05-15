@@ -4,6 +4,7 @@ project(kronmult_gpu CUDA)
 set(CMAKE_CUDA_STANDARD 14)
 
 set(SOURCES
+        kronmult.h
         kronmult.cu
         kronmult.cuh
         linear_algebra.cuh)

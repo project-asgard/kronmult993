@@ -1,4 +1,5 @@
 #pragma once
+#include <cuda_runtime.h>
 
 /*
  * converts row and col indices into a single index for a matrix store in col-major

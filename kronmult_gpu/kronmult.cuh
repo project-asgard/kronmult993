@@ -6,7 +6,8 @@
 /*
  * computes number^power for integers
  * does not care about performances
- * does not use std::pow as it does an implicit float conversion that could lead to rounding errors for high numbers
+ * does not use std::pow as it does an implicit float conversion that could lead to rounding errors for high
+ * numbers
  */
 __device__ int cuda_pow_int(const int number, const int power)
 {
@@ -71,9 +72,9 @@ __global__ void cuda_kronmult(const int matrix_count, const int matrix_size, T c
  */
 template<typename T>
 __global__ void cuda_kronmult_batched(const int matrix_count, const int matrix_size, T const * const matrix_list_batched[], const int matrix_stride,
-                      T* input_batched[],
-                      T* output_batched[], T* workspace_batched[],
-                      const int nb_batch)
+                                      T* input_batched[],
+                                      T* output_batched[], T* workspace_batched[],
+                                      const int nb_batch)
 {
     // numbers of elements in the input vector
     int size_input = cuda_pow_int(matrix_size, matrix_count);
@@ -95,15 +96,4 @@ __global__ void cuda_kronmult_batched(const int matrix_count, const int matrix_s
     }
 
     delete[] transpose_workspace;
-}
-
-// TODO just for tests
-template<typename T>
-void kronmult_batched(const int matrix_count, const int matrix_size, T const * const matrix_list_batched[], const int matrix_stride,
-                           T* input_batched[],
-                           T* output_batched[], T* workspace_batched[],
-                           const int nb_batch)
-{
-    cuda_kronmult_batched<1,1>(matrix_count, matrix_size, matrix_list_batched, matrix_stride,
-                                input_batched, output_batched, workspace_batched, nb_batch);
 }
