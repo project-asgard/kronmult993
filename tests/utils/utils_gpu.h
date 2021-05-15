@@ -4,13 +4,13 @@
 #include <cuda.h>
 
 /*
- * throws an exeption if an errorCode is meet
+ * throws an exception if an errorCode is meet
  */
 void checkCudaErrorCode(const cudaError errorCode, const std::string& functionName)
 {
     if(errorCode != cudaSuccess)
     {
-        throw std::runtime_error(functionName + ": failed with CUDA error code " + std::to_string(errorCode));
+        throw std::runtime_error(functionName + ": failed with CUDA error " + cudaGetErrorString(errorCode));
     }
 }
 

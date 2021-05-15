@@ -55,11 +55,19 @@ long runBench(const int degree, const int dimension, const int grid_level, const
  */
 int main()
 {
+    std::cout << "Starting benchmark." << std::endl;
     // gets basic information on the cuda device
+    int deviceId;
+    cudaGetDevice(&deviceId);
+    int threadsPerBlock;
+    cudaDeviceGetAttribute(&threadsPerBlock, cudaDevAttrMaxThreadsPerBlock, deviceId);
     cudaDeviceProp deviceProp;
-    const cudaError errorCode = cudaGetDeviceProperties(&deviceProp, 0);
+    const cudaError errorCode = cudaGetDeviceProperties(&deviceProp, deviceId);
     checkCudaErrorCode(errorCode, "cudaSetDevice");
-    std::cout << "Starting benchmark (GPU compatible " << deviceProp.major << '.' << deviceProp.minor << ")." << std::endl;
+    std::cout << "GPU device:" << deviceId
+              << " threadsAvailable:" << threadsPerBlock
+              << " architecture:" << deviceProp.major << '.' << deviceProp.minor
+              << std::endl;
 
     // running the benchmarks
     auto toy = runBench(4, 1, 2, "toy");
