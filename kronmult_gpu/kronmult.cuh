@@ -41,15 +41,15 @@ __device__ void cuda_kronmult(const int matrix_count, const int matrix_size, T c
         // swap `input` and `workspace` such that `input` contains once again the input
         // note that, while they have the same size flattened, the shape (nb_columns and nb_rows) of `input` and `workspace` are different
         // this is on purpose and equivalent to a reshape operation that is actually needed by the algorithm
-        // TODO (no swap in cuda)
-        //std::swap(input, workspace);
+        T* temp = input;
+        input = workspace;
+        workspace = temp;
     }
 
     // reduce in a threadsafe way
     for(int i = 0; i < size_input; i++)
     {
-        // TODO make atomic
-        output[i] += input[i];
+        atomicAdd(&output[i], input[i]);
     }
 }
 
@@ -71,7 +71,7 @@ __global__ void cuda_kronmult_batched(const int matrix_count, const int matrix_s
                                       T* output_batched[], T* workspace_batched[],
                                       const int nb_batch)
 {
-    // TODO paralelise
+    // TODO paralelise by picking batch as a function of thread index instead of iterating
     for(int i=0; i < nb_batch; i++)
     {
         // computes kronmult

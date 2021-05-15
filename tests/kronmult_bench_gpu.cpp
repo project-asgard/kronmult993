@@ -53,7 +53,9 @@ long runBench(const int degree, const int dimension, const int grid_level, const
  */
 int main()
 {
-    std::cout << "Starting benchmark (GPU)." << std::endl;
+    cudaDeviceProp deviceProp;
+    cudaGetDeviceProperties(&deviceProp, 0);
+    std::cout << "Starting benchmark (GPU version " << deviceProp.major << '.' << deviceProp.minor << ")." << std::endl;
 
     // running the benchmarks
     auto toy = runBench(4, 1, 2, "toy");
