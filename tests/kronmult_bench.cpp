@@ -2,6 +2,7 @@
 #include <chrono>
 #include <omp.h>
 #include <kronmult.hpp>
+#include "utils/utils_cpu.h"
 
 // change this to run the bench in another precision
 using Number = double;
@@ -30,57 +31,21 @@ long runBench(const int degree, const int dimension, const int grid_level, const
     // allocates a problem
     // we do not put data in the vectors/matrices as it doesn't matter here
     std::cout << "Starting allocation." << std::endl;
-    auto matrix_list_batched = new Number*[batch_count * matrix_count];
-    auto input_batched = new Number*[batch_count];
-    auto output_batched = new Number*[batch_count];
-    auto workspace_batched = new Number*[batch_count];
-    // outputs that will be used
-    auto actual_output_batched = new Number*[nb_distinct_outputs];
-    for(int batch = 0; batch < nb_distinct_outputs; batch++)
-    {
-        actual_output_batched[batch] = new Number[size_input];
-    }
-    #pragma omp parallel for
-    for(int batch = 0; batch < batch_count; batch++)
-    {
-        for(int mat = 0; mat < matrix_count; mat++)
-        {
-            matrix_list_batched[batch * matrix_count + mat] = new Number[matrix_size * matrix_stride];
-        }
-        input_batched[batch] = new Number[size_input];
-        workspace_batched[batch] = new Number[size_input];
-        // represents output vector reuse
-        const int output_number = (batch * nb_distinct_outputs) / batch_count;
-        output_batched[batch] = actual_output_batched[output_number];
-    }
+    std::cout << "Starting allocation." << std::endl;
+    ArrayBatch<Number> matrix_list_batched(matrix_size * matrix_stride, batch_count * matrix_count);
+    ArrayBatch<Number> input_batched(size_input, batch_count);
+    ArrayBatch<Number> workspace_batched(size_input, batch_count);
+    ArrayBatch_withRepetition<Number> output_batched(size_input, batch_count, nb_distinct_outputs);
 
     // runs kronmult several times and displays the average runtime
     std::cout << "Starting Kronmult" << std::endl;
     auto start = std::chrono::high_resolution_clock::now();
-    kronmult_batched(matrix_count, matrix_size, matrix_list_batched,
-                     matrix_stride, input_batched, output_batched,
-                     workspace_batched, batch_count);
+    kronmult_batched(matrix_count, matrix_size, matrix_list_batched.rawPointer,
+                     matrix_stride, input_batched.rawPointer, output_batched.rawPointer,
+                     workspace_batched.rawPointer, batch_count);
     auto stop = std::chrono::high_resolution_clock::now();
     auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count();
     std::cout << "Runtime: " << milliseconds << "ms" << std::endl;
-
-    // deallocates the problem
-    std::cout << "Starting delete." << std::endl;
-    for(int batch = 0; batch < batch_count; batch++)
-    {
-        for(int mat = 0; mat < matrix_count; mat++)
-        {
-            delete[] matrix_list_batched[batch * matrix_count + mat];
-        }
-        delete[] input_batched[batch];
-        delete[] workspace_batched[batch];
-        if(batch < nb_distinct_outputs) delete[] actual_output_batched[batch];
-    }
-    delete[] actual_output_batched;
-    delete[] matrix_list_batched;
-    delete[] input_batched;
-    delete[] output_batched;
-    delete[] workspace_batched;
 
     return milliseconds;
 }

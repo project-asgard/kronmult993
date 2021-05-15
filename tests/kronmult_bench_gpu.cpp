@@ -1,20 +1,10 @@
 #include <iostream>
 #include <chrono>
 #include <kronmult.cuh>
+#include "utils/utils_gpu.h"
 
 // change this to run the bench in another precision
 using Number = double;
-
-/*
- * allocates an array of the given size on the device
- * similar to `new T[size]`
- */
-template<typename T> T* cudaNew(size_t size)
-{
-    T* pointer;
-    cudaMalloc((void**)&pointer, sizeof(T) * size);
-    return pointer;
-}
 
 /*
  * runs a benchmark with the given parameters
@@ -40,58 +30,20 @@ long runBench(const int degree, const int dimension, const int grid_level, const
     // allocates a problem
     // we do not put data in the vectors/matrices as it doesn't matter here
     std::cout << "Starting allocation." << std::endl;
-    auto matrix_list_batched = cudaNew<Number*>(batch_count * matrix_count);
-    auto input_batched = cudaNew<Number*>(batch_count);
-    auto output_batched = cudaNew<Number*>(batch_count);
-    auto workspace_batched = cudaNew<Number*>(batch_count);
-    // outputs that will be used
-    auto actual_output_batched = new Number*[nb_distinct_outputs];
-    for(int batch = 0; batch < nb_distinct_outputs; batch++)
-    {
-        actual_output_batched[batch] = cudaNew<Number>(size_input);
-    }
-    //TODO can you actually ut values in device arrays like that?
-    #pragma omp parallel for
-    for(int batch = 0; batch < batch_count; batch++)
-    {
-        for(int mat = 0; mat < matrix_count; mat++)
-        {
-            matrix_list_batched[batch * matrix_count + mat] = cudaNew<Number>(matrix_size * matrix_stride);
-        }
-        input_batched[batch] = cudaNew<Number>(size_input);
-        workspace_batched[batch] = cudaNew<Number>(size_input);
-        // represents output vector reuse
-        const int output_number = (batch * nb_distinct_outputs) / batch_count;
-        output_batched[batch] = actual_output_batched[output_number];
-    }
+    DeviceArrayBatch<Number> matrix_list_batched(matrix_size * matrix_stride, batch_count * matrix_count);
+    DeviceArrayBatch<Number> input_batched(size_input, batch_count);
+    DeviceArrayBatch<Number> workspace_batched(size_input, batch_count);
+    DeviceArrayBatch_withRepetition<Number> output_batched(size_input, batch_count, nb_distinct_outputs);
 
     // runs kronmult several times and displays the average runtime
     std::cout << "Starting Kronmult" << std::endl;
     auto start = std::chrono::high_resolution_clock::now();
-    kronmult_batched(matrix_count, matrix_size, matrix_list_batched,
-                     matrix_stride, input_batched, output_batched,
-                     workspace_batched, batch_count);
+    kronmult_batched(matrix_count, matrix_size, matrix_list_batched.rawPointer,
+                     matrix_stride, input_batched.rawPointer, output_batched.rawPointer,
+                     workspace_batched.rawPointer, batch_count);
     auto stop = std::chrono::high_resolution_clock::now();
     auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count();
     std::cout << "Runtime: " << milliseconds << "ms" << std::endl;
-
-    // deallocates the problem
-    std::cout << "Starting delete." << std::endl;
-    for(int batch = 0; batch < batch_count; batch++)
-    {
-        for(int mat = 0; mat < matrix_count; mat++)
-        {
-            cudaFree(matrix_list_batched[batch * matrix_count + mat]);
-        }
-        cudaFree(input_batched[batch]);
-        cudaFree(workspace_batched[batch]);
-        if(batch < nb_distinct_outputs) cudaFree(actual_output_batched[batch]);
-    }
-    cudaFree(actual_output_batched);
-    cudaFree(matrix_list_batched);
-    cudaFree(input_batched);
-    cudaFree(output_batched);
-    cudaFree(workspace_batched);
 
     return milliseconds;
 }
