@@ -6,7 +6,7 @@ project(kronmult LANGUAGES CUDA CXX)
 # add kronmult implementations
 add_subdirectory(kronmult_omp)
 add_subdirectory(kronmult_gpu)
-add_subdirectory(kronmult)
+add_subdirectory(kronorigin)
 
 # adds tests
 include(CTest)

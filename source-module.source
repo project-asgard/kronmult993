@@ -1,0 +1,3 @@
+module purge
+module load cgpu cuda cmake/3.20.2 PrgEnv-gnu 
+module unload cray-libsci
