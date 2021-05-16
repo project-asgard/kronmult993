@@ -1,8 +1,9 @@
-tests run on a haswell node (64 cores, exclusive reservation)
+tests run on a haswell node (64 cores, exclusive reservation) or a GPU Tesla V100
 we use the MKL as our BLAS of choice
 we use the minimum of several runs as its the best representation of the actual computing time (noise is additive)
 
 -------------------- DOUBLE --------------------
+WARNING computed on 2^13 batch elements
 
 BLAS (min of 3 runs)
 toy: 3ms
@@ -44,6 +45,7 @@ realistic: 8623ms
 => speed similar to old no-blas version
 
 -------------------- FLOAT --------------------
+WARNING computed on 2^13 batch elements
 
 BLAS (min of 3 runs)
 toy: 3ms
@@ -67,18 +69,19 @@ large: 7352ms
 realistic: 7342ms
 
 -------------------- GPU DOUBLE --------------------
-WARNING, we use smaller batch sizes so the times are not directly comparable
-
-gpu_threads (min of 3 runs)
-toy: 0ms
-small: 0ms
-medium: 7ms
-large: 19089ms
-realistic: 19030ms
 
 gpu_inputsize (min of 3 runs)
 toy: 1ms
-small: 0ms
-medium: 2ms
-large: 62ms
-realistic: 62ms
+small: 1ms
+medium: 3ms
+large: 804ms
+realistic: 788ms
+
+-------------------- GPU FLOAT --------------------
+
+gpu_inputsize (min of 3 runs)
+toy: 1ms
+small: 1ms
+medium: 3ms
+large: 471ms
+realistic: 492ms
