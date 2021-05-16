@@ -26,9 +26,9 @@ else()
 endif()
 
 # benchmark
-add_executable(kronmult_bench kronmult_bench.cpp)
-target_link_libraries(kronmult_bench PUBLIC kronmult_omp ${BLAS_LIBRARIES})
-add_test(NAME kronmult_bench COMMAND ./kronmult_bench)
+#add_executable(kronmult_bench kronmult_bench.cpp)
+#target_link_libraries(kronmult_bench PUBLIC kronmult_omp ${BLAS_LIBRARIES})
+#add_test(NAME kronmult_bench COMMAND ./kronmult_bench)
 
 #----------------------------------------------------------------------------------------
 # CUDA

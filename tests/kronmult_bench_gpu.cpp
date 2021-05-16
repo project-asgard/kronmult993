@@ -1,7 +1,7 @@
 #include <iostream>
 #include <chrono>
 //#include <kronmult.cuh>
-//#include "utils/utils_gpu.h"
+#include "utils/utils_gpu.h"
 #include <kronmult.hpp>
 
 // change this to run the bench in another precision
@@ -38,10 +38,15 @@ long runBench(const int degree, const int dimension, const int grid_level, const
 
     // runs kronmult several times and displays the average runtime
     std::cout << "Starting Kronmult" << std::endl;
+    cudaError errorCode;
     auto start = std::chrono::high_resolution_clock::now();
-    const cudaError errorCode = kronmult_batched(matrix_count, matrix_size, matrix_list_batched.rawPointer,
+    switch(dimension){
+    case 6:
+    errorCode = kronmult6_xbatched(matrix_count, matrix_size, matrix_list_batched.rawPointer,
                                                  matrix_stride, input_batched.rawPointer, output_batched.rawPointer,
                                                  workspace_batched.rawPointer, batch_count);
+    break;
+    }
     auto stop = std::chrono::high_resolution_clock::now();
     auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count();
     std::cout << "Runtime: " << milliseconds << "ms" << std::endl;
