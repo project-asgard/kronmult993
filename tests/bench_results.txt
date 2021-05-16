@@ -3,85 +3,53 @@ we use the MKL as our BLAS of choice
 we use the minimum of several runs as its the best representation of the actual computing time (noise is additive)
 
 -------------------- DOUBLE --------------------
-WARNING computed on 2^13 batch elements
 
-BLAS (min of 3 runs)
-toy: 3ms
-small: 7ms
-medium: 4ms
-large: 4975ms
-realistic: 4886ms
-
-BLAS no atomic reduction (min of 3 runs)
-toy: 3ms
-small: 12ms
-medium: 1ms
-large: 4812ms
-realistic: 4713ms
-=> barely faster, the synchronisation on reduction is NOT a bottleneck
-
-BLAS explicit transpose (min of 3 runs)
-toy: 2ms
-small: 20ms
-medium: 3ms
-large: 4891ms
-realistic: 4789ms
-=> very small improvements, not worth it
-
-No BLAS (min of 5 runs)
-toy: 0ms
-small: 0ms
-medium: 9ms
-large: 5867ms
-realistic: 5794ms
-=> about 20% slower than BLAS
-
-Old Kronmult (min of 5 runs)
-toy: 0ms
-small: 0ms
-medium: 5ms
-large: 8688ms
-realistic: 8623ms
-=> speed similar to old no-blas version
-
--------------------- FLOAT --------------------
-WARNING computed on 2^13 batch elements
-
-BLAS (min of 3 runs)
-toy: 3ms
-small: 7ms
-medium: 7ms
-large: 2570ms
-realistic: 2531ms
-
-No BLAS (min of 3 runs)
-toy: 0ms
-small: 0ms
-medium: 5ms
-large: 3969ms
-realistic: 3874ms
-
-Old Kronmult (min of 3 runs)
-toy: 0ms
-small: 0ms
-medium: 6ms
-large: 7352ms
-realistic: 7342ms
-
--------------------- GPU DOUBLE --------------------
-
-gpu_inputsize (min of 3 runs)
+GPU inputsize (min of 3 runs)
 toy: 1ms
 small: 1ms
 medium: 3ms
 large: 804ms
 realistic: 788ms
 
--------------------- GPU FLOAT --------------------
+BLAS (min of 3 runs)
+toy: 4ms
+small: 14ms
+medium: 1ms
+large: 2548ms
+realistic: 2523ms
 
-gpu_inputsize (min of 3 runs)
+No BLAS (min of 3 runs)
+toy: 0ms
+small: 0ms
+medium: 3ms
+large: 3010ms
+realistic: 3015ms
+
+Old Kronmult (min of 3 runs)
+
+
+-------------------- FLOAT --------------------
+
+GPU inputsize (min of 3 runs)
 toy: 1ms
 small: 1ms
 medium: 3ms
 large: 471ms
 realistic: 492ms
+
+BLAS (min of 3 runs)
+toy: 2ms
+small: 9ms
+medium: 4ms
+large: 1322ms
+realistic: 1316ms
+
+No BLAS (min of 3 runs)
+toy: 0ms
+small: 0ms
+medium: 3ms
+large: 2015ms
+realistic: 1968ms
+
+Old Kronmult (min of 3 runs)
+
