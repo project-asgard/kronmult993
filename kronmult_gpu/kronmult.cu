@@ -65,9 +65,7 @@ __global__ void cuda_kronmult_thread(const int matrix_count, const int matrix_si
                                       T* output_batched[], T* workspace_batched[],
                                       const int nb_batch)
 {
-    // each thread get a single batch
-    const int batchId = blockIdx.x * blockDim.x + threadIdx.x;
-
+    int batchId = blockIdx.x * blockDim.x + threadIdx.x;
     if(batchId < nb_batch)
     {
         // gets the inputs for the algorithm
@@ -96,17 +94,18 @@ __host__ cudaError cuda_kronmult_batched(const int matrix_count, const int matri
     int size_input = pow_int(matrix_size, matrix_count);
 
     // gets maximum number of thread possible per block
-    int deviceId;
+    /*int deviceId;
     cudaGetDevice(&deviceId);
     int threadsPerBlock;
     cudaDeviceGetAttribute(&threadsPerBlock, cudaDevAttrMaxThreadsPerBlock, deviceId);
     // split batches into blocks with a maximum of threads in each
     if(nb_batch < threadsPerBlock) threadsPerBlock = nb_batch;
+    // nbBlocks
     unsigned int nbBlocks = (nb_batch + threadsPerBlock - 1) / threadsPerBlock; // ceil(nb_batch/threadsPerBlock)
-    //printf("threads-per-block:%d nb-blocks:%d\n", threadsPerBlock, nbBlocks);
+    printf("threads-per-block:%d nb-blocks:%d multiprocessors:%d\n", threadsPerBlock, nbBlocks);*/
 
     // paralelize on batch elements
-    cuda_kronmult_thread<<<nbBlocks, threadsPerBlock>>>(matrix_count, matrix_size, matrix_list_batched, matrix_stride,
+    cuda_kronmult_thread<<<nb_batch, 1>>>(matrix_count, matrix_size, matrix_list_batched, matrix_stride,
                                                         input_batched, size_input, output_batched, workspace_batched, nb_batch);
 
     // waits for kernel to succeed and returns error code
