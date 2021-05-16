@@ -14,6 +14,42 @@ __host__ int pow_int(const int number, const int power)
 }
 
 /*
+ * Computes Y = X^T * M^T
+ *      <=> Y[i,j] = X[k,i] * M[j,k]
+ *
+ * X is a `size_M` by `nb_col_X` matrix
+ * M is a `size_M` by `size_M` matrix of stride `matrix_stride`
+ * Y is a `nb_col_X` by `size_M` matrix
+ * M_transposed is a `size_M` by `size_M` matrix of stride `size_M` to store M^T temporarily
+ *
+ * WARNING: the matrices are assumed to be stored in col-major order
+ */
+template<typename T>
+__device__ void multiply_transpose(const T X[], const int nb_col_X,
+                                   const T M[], const int size_M, const int stride_M,
+                                   T Y[], T M_transposed[])
+{
+    // transpose the matrix to get a better alignement
+    if(threadIdx.x == 0) transpose(M, M_transposed, size_M, stride_M);
+    __syncthreads();
+
+    // each thread t manage the input i such that i%t==0
+    // knowing that input_size = nb_col_X*size_M
+    for(int i = threadIdx.x; i < nb_col_X*size_M; i+=blockDim.x)
+    {
+        const int colX = i / size_M;
+        const int rowM = i - colX*size_M;
+        T dotprod = 0.;
+        for(int k=0; k < size_M; k++)
+        {
+            dotprod += X[colmajor(k,colX,size_M)] * M_transposed[colmajor(k,rowM,size_M)];
+        }
+        Y[colmajor(colX,rowM,nb_col_X)] = dotprod;
+    }
+    __syncthreads();
+}
+
+/*
  * Computes output += kron(matrix_list) * input
  *
  * `matrix_list` is an array containing pointers to `matrix_number` square matrices of size `matrix_size` by `matrix_size` and stride `matrix_stride`
@@ -49,7 +85,8 @@ __device__ void cuda_kronmult(const int matrix_count, const int matrix_size, T c
     }
 
     // reduce in a threadsafe way
-    for(int i = 0; i < size_input; i++)
+    // each thread t manage the input i such that i%t==0
+    for(int i = threadIdx.x; i < size_input; i+=blockDim.x)
     {
         atomicAdd(&output[i], input[i]);
     }
@@ -65,24 +102,26 @@ __global__ void cuda_kronmult_thread(const int matrix_count, const int matrix_si
                                       T* output_batched[], T* workspace_batched[],
                                       const int nb_batch)
 {
-    // each thread get a single batch
-    const int batchId = blockIdx.x * blockDim.x + threadIdx.x;
+    // each block corresponds to a batch element
+    const int batchId = blockIdx.x;
 
-    if(batchId < nb_batch)
-    {
-        // gets the inputs for the algorithm
-        T const * const * matrix_list = &matrix_list_batched[batchId*matrix_count];
-        T* input = input_batched[batchId];
-        T* output = output_batched[batchId];
-        T* workspace = workspace_batched[batchId];
-        T* transpose_workspace = new T[matrix_size*matrix_size];
-        // computes kronmult
-        // result is stored in `workspace` if `matrix_count` is odd and `input` if it is even
-        cuda_kronmult<T>(matrix_count, matrix_size, matrix_list, matrix_stride, input, size_input, output, workspace, transpose_workspace);
-        // free memory
-        delete[] transpose_workspace;
-        delete[] workspace;
-    }
+    // gets the inputs for the algorithm
+    T const * const * matrix_list = &matrix_list_batched[batchId*matrix_count];
+    T* input = input_batched[batchId];
+    T* output = output_batched[batchId];
+    T* workspace = workspace_batched[batchId];
+
+    // allocates the transpose workspace in shared memory
+    __shared__ T* transpose_workspace;
+    if(threadIdx.x == 0) transpose_workspace = new T[matrix_size*matrix_size];
+    __syncthreads();
+
+    // computes kronmult
+    cuda_kronmult<T>(matrix_count, matrix_size, matrix_list, matrix_stride, input, size_input, output, workspace, transpose_workspace);
+
+    // free memory
+    __syncthreads();
+    if(threadIdx.x == 0) delete[] transpose_workspace;
 }
 
 /*
@@ -96,18 +135,17 @@ __host__ cudaError cuda_kronmult_batched(const int matrix_count, const int matri
     // numbers of elements in the input vector
     int size_input = pow_int(matrix_size, matrix_count);
 
-    // gets maximum number of thread possible per block
+    // each block will be a batch element
+    // each thread will be a subset of the lines in input
     int deviceId;
     cudaGetDevice(&deviceId);
     int threadsPerBlock;
     cudaDeviceGetAttribute(&threadsPerBlock, cudaDevAttrMaxThreadsPerBlock, deviceId);
-    // split batches into blocks with a maximum of threads in each
-    if(nb_batch < threadsPerBlock) threadsPerBlock = nb_batch;
-    unsigned int nbBlocks = (nb_batch + threadsPerBlock - 1) / threadsPerBlock; // ceil(nb_batch/threadsPerBlock)
-    printf("threads-per-block:%d nb-blocks:%d\n", threadsPerBlock, nbBlocks);
+    if(size_input < threadsPerBlock) threadsPerBlock = size_input;
+    printf("threads-per-block:%d nb-blocks:%d\n", threadsPerBlock, nb_batch);
 
     // paralelize on batch elements
-    cuda_kronmult_thread<<<nbBlocks, threadsPerBlock>>>(matrix_count, matrix_size, matrix_list_batched, matrix_stride,
+    cuda_kronmult_thread<<<nb_batch, threadsPerBlock>>>(matrix_count, matrix_size, matrix_list_batched, matrix_stride,
                                                         input_batched, size_input, output_batched, workspace_batched, nb_batch);
 
     // waits for kernel to succeed and returns error code
