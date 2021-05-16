@@ -81,7 +81,6 @@ __global__ void cuda_kronmult_thread(const int matrix_count, const int matrix_si
         cuda_kronmult<T>(matrix_count, matrix_size, matrix_list, matrix_stride, input, size_input, output, workspace, transpose_workspace);
         // free memory
         delete[] transpose_workspace;
-        delete[] workspace;
     }
 }
 
@@ -104,7 +103,7 @@ __host__ cudaError cuda_kronmult_batched(const int matrix_count, const int matri
     // split batches into blocks with a maximum of threads in each
     if(nb_batch < threadsPerBlock) threadsPerBlock = nb_batch;
     unsigned int nbBlocks = (nb_batch + threadsPerBlock - 1) / threadsPerBlock; // ceil(nb_batch/threadsPerBlock)
-    printf("threads-per-block:%d nb-blocks:%d\n", threadsPerBlock, nbBlocks);
+    //printf("threads-per-block:%d nb-blocks:%d\n", threadsPerBlock, nbBlocks);
 
     // paralelize on batch elements
     cuda_kronmult_thread<<<nbBlocks, threadsPerBlock>>>(matrix_count, matrix_size, matrix_list_batched, matrix_stride,
