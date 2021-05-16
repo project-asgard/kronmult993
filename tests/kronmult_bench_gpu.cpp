@@ -2,7 +2,7 @@
 #include <chrono>
 //#include <kronmult.cuh>
 #include "utils/utils_gpu.h"
-#include <kronmult.hpp>
+#include <kronmult.cuh>
 
 // change this to run the bench in another precision
 using Number = double;
@@ -38,19 +38,17 @@ long runBench(const int degree, const int dimension, const int grid_level, const
 
     // runs kronmult several times and displays the average runtime
     std::cout << "Starting Kronmult" << std::endl;
-    cudaError errorCode;
     auto start = std::chrono::high_resolution_clock::now();
-    switch(dimension){
-    case 6:
-    errorCode = kronmult6_xbatched(matrix_count, matrix_size, matrix_list_batched.rawPointer,
+    kronmult_batched(matrix_count, matrix_size, matrix_list_batched.rawPointer,
                                                  matrix_stride, input_batched.rawPointer, output_batched.rawPointer,
                                                  workspace_batched.rawPointer, batch_count);
-    break;
-    }
+    cudaDeviceSynchronize();
     auto stop = std::chrono::high_resolution_clock::now();
     auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count();
     std::cout << "Runtime: " << milliseconds << "ms" << std::endl;
-    checkCudaErrorCode(errorCode, "kronmult_batched");
+    for(int i =0; i<nb_distinct_outputs ; i++)
+        std::cout << output_batched.rawPointer[i][0]<< std::endl;
+    //checkCudaErrorCode(errorCode, "kronmult_batched");
 
     return milliseconds;
 }
@@ -75,10 +73,10 @@ int main()
               << std::endl;
 
     // running the benchmarks
-    auto toy = runBench(4, 1, 2, "toy");
-    auto small = runBench(4, 2, 4, "small");
-    auto medium = runBench(6, 3, 6, "medium");
-    auto large = runBench(8, 6, 7, "large");
+    auto toy = runBench(8, 6, 9, "toy");
+    auto small = runBench(8, 6, 9, "small");
+    auto medium = runBench(8, 6, 9, "medium");
+    auto large = runBench(8, 6, 9, "large");
     auto realistic = runBench(8, 6, 9, "realistic");
 
     // display results
