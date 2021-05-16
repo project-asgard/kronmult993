@@ -67,18 +67,14 @@ large: 7352ms
 realistic: 7342ms
 
 -------------------- GPU DOUBLE --------------------
-WARNING, we use smaller batch sizes so the times are not directly comparable
 
-DEFAULT (min of 3 runs)
-toy: 0ms
-small: 0ms
-medium: 7ms
-large: 19089ms
-realistic: 19030ms
+gpu_thread (min of 3 runs)
+too long to measure
 
-LOCAL transpose workspace (min of 3 runs)
+gpu_inputsize (min of 3 runs)
+Results:
 toy: 1ms
-small: 0ms
-medium: 7ms
-large: 18434ms
-realistic: 18458ms
+small: 2ms
+medium: 4ms
+large: 3796ms
+realistic: 3638ms
