@@ -4,7 +4,7 @@
 #include <kronmult.hpp>
 
 // use to try other precisions
-using Number = float;
+using Number = double;
 
 /*
  * computes number^power for integers
@@ -24,7 +24,8 @@ int pow_int(const int number, const int power)
 long runBench(const int degree, const int dimension, const int grid_level, const std::string benchName, const int nb_distinct_outputs = 5)
 {
     // Kronmult parameters
-    const int batch_count = pow_int(2, std::min(13, grid_level*(dimension-1)));
+    // TODO find proper formula for batch count, current one generates batches too large to be allocated without the min
+    const int batch_count = std::min(pow_int(2,12), pow_int(2, grid_level) * pow_int(grid_level, dimension-1));
     const int matrix_size = degree;
     const int matrix_count = dimension;
     const int size_input = pow_int(matrix_size, matrix_count);
