@@ -14,42 +14,6 @@ __host__ int pow_int(const int number, const int power)
 }
 
 /*
- * Computes Y = X^T * M^T
- *      <=> Y[i,j] = X[k,i] * M[j,k]
- *
- * X is a `size_M` by `nb_col_X` matrix
- * M is a `size_M` by `size_M` matrix of stride `matrix_stride`
- * Y is a `nb_col_X` by `size_M` matrix
- * M_transposed is a `size_M` by `size_M` matrix of stride `size_M` to store M^T temporarily
- *
- * WARNING: the matrices are assumed to be stored in col-major order
- */
-template<typename T>
-__device__ void multiply_transpose(const T X[], const int nb_col_X,
-                                   const T M[], const int size_M, const int stride_M,
-                                   T Y[], T M_transposed[])
-{
-    // transpose the matrix to get a better alignement
-    if(threadIdx.x == 0) transpose(M, M_transposed, size_M, stride_M);
-    __syncthreads();
-
-    // each thread t manage the input i such that i%t==0
-    // knowing that input_size = nb_col_X*size_M
-    for(int i = threadIdx.x; i < nb_col_X*size_M; i+=blockDim.x)
-    {
-        const int colX = i / size_M;
-        const int rowM = i - colX*size_M;
-        T dotprod = 0.;
-        for(int k=0; k < size_M; k++)
-        {
-            dotprod += X[colmajor(k,colX,size_M)] * M_transposed[colmajor(k,rowM,size_M)];
-        }
-        Y[colmajor(colX,rowM,nb_col_X)] = dotprod;
-    }
-    __syncthreads();
-}
-
-/*
  * Computes output += kron(matrix_list) * input
  *
  * `matrix_list` is an array containing pointers to `matrix_number` square matrices of size `matrix_size` by `matrix_size` and stride `matrix_stride`
@@ -73,9 +37,15 @@ __device__ void cuda_kronmult(const int matrix_count, const int matrix_size, T c
     // iterates on the matrices from the last to the one just before first
     for(int i = matrix_count-1; i >= 0; i--)
     {
-        // takes `matrix` into account and put the result in `workspace` (use `output` as a workspace if needed)
+        // transpose the matrix to get a better alignement
         T const * const matrix = matrix_list[i];
-        multiply_transpose<T>(input, nb_col_input, matrix, matrix_size, matrix_stride, workspace, transpose_workspace);
+        if(threadIdx.x == 0) transpose(matrix, transpose_workspace, matrix_size, matrix_stride);
+        __syncthreads();
+
+        // performs the multiplication to consume the matrix
+        multiply_transpose<T>(input, nb_col_input, transpose_workspace, matrix_size, workspace);
+        __syncthreads();
+
         // swap `input` and `workspace` such that `input` contains once again the input
         // note that, while they have the same size flattened, the shape (nb_columns and nb_rows) of `input` and `workspace` are different
         // this is on purpose and equivalent to a reshape operation that is actually needed by the algorithm
