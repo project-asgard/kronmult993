@@ -1,7 +1,8 @@
 #include <iostream>
 #include <chrono>
-#include <kronmult.cuh>
-#include "utils/utils_gpu.h"
+//#include <kronmult.cuh>
+//#include "utils/utils_gpu.h"
+#include <kronmult.hpp>
 
 // change this to run the bench in another precision
 using Number = double;
