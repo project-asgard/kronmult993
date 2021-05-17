@@ -13,6 +13,12 @@ We implement a variant of the backward version of algorithm 993 ([Algorithm 993:
 
 We highly recommend reading [ON KRONECKER PRODUCTS, TENSOR PRODUCTS AND MATRIX DIFFERENTIAL CALCULUS by Stephen Pollock](https://www.le.ac.uk/economics/research/RePEc/lec/leecon/dp14-02.pdf) to get more familiar with the algebra and reshaping tricks techniques used in the implementation.
 
+#Different algorithms:
+
+There is the original kronmult version as developed by Ed D'azevedo, and currently used in ASgard.
+There is the 993 algorithm, as described here. Performance tests allows to see the improvement brought by this algorithm.
+TODO: make correctness test to ensure all algorithms are correctly implemented.
+
 ## Usage
 
 We implemented a basic and a batched version of the algorithm:
