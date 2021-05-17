@@ -52,9 +52,9 @@ __device__ void multiply_transpose(const T X[], const int nb_col_X,
     for(int i = threadIdx.x; i < nb_col_X*size_M; i+=blockDim.x)
     {
         const int colX = i / size_M;
-        const int rowM = i - colX*size_M;
+        const int rowM = i - colX*size_M; // <--> i%size_M
         T dotprod = 0.;
-        for(int k=0; k < size_M; k++)
+        for(int k=0; k < size_M; k++) // Does it work if blockDim.x % size_M != 0 ?
         {
             dotprod += X[colmajor(k,colX,size_M)] * M_transposed[colmajor(k,rowM,size_M)];
         }

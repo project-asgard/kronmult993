@@ -114,7 +114,7 @@ __host__ cudaError cuda_kronmult_batched(const int matrix_count, const int matri
     if(size_input < threadsPerBlock) threadsPerBlock = size_input;
     //printf("threads-per-block:%d nb-blocks:%d\n", threadsPerBlock, nb_batch);
 
-    // paralelize on batch elements
+    // parallelize on batch elements
     cuda_kronmult_thread<<<nb_batch, threadsPerBlock>>>(matrix_count, matrix_size, matrix_list_batched, matrix_stride,
                                                         input_batched, size_input, output_batched, workspace_batched, nb_batch);
 

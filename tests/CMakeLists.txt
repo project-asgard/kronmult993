@@ -27,10 +27,11 @@ else()
 endif()
 
 # benchmark
-#add_executable(kronmult_bench kronmult_bench.cpp)
-#target_link_libraries(kronmult_bench PUBLIC kronmult_omp ${BLAS_LIBRARIES})
-#add_test(NAME kronmult_bench COMMAND ./kronmult_bench)
+add_executable(kronmult_bench kronmult_bench.cpp)
+target_link_libraries(kronmult_bench PUBLIC kronmult_origin kronmult_omp ${BLAS_LIBRARIES})
+add_test(NAME kronmult_bench COMMAND ./kronmult_bench)
 
+if(USE_GPU)
 #----------------------------------------------------------------------------------------
 # CUDA
 
@@ -60,3 +61,4 @@ add_test(NAME kronmult_bench_gpu COMMAND ./kronmult_bench_gpu)
 #    target_link_libraries(${TEST_EXE_NAME} PUBLIC kron ${BLAS_LIBRARIES})
 #    add_test(NAME  ${TEST_EXE_NAME} COMMAND ./${TEST_EXE_NAME})
 #endforeach(TEST_EXE_NAME)
+endif()
