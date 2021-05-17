@@ -30,6 +30,11 @@ add_executable(kronmult_bench kronmult_bench.cpp)
 target_link_libraries(kronmult_bench PUBLIC kronmult_omp ${BLAS_LIBRARIES})
 add_test(NAME kronmult_bench COMMAND ./kronmult_bench)
 
+# test
+add_executable(kronmult_test_cpu kronmult_test.cpp)
+target_link_libraries(kronmult_test_cpu PUBLIC kronmult_omp ${BLAS_LIBRARIES})
+add_test(NAME kronmult_test_cpu COMMAND ./kronmult_bench)
+
 #----------------------------------------------------------------------------------------
 # CUDA
 

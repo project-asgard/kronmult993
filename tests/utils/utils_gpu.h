@@ -52,7 +52,7 @@ class DeviceArrayBatch
         for(unsigned int i=0; i<nb_arrays; i++)
         {
             rawPointer[i] = cudaNew<T>(array_sizes);
-            if(should_initialize_data) fillArray(rawPointer[i], nb_arrays, rng);
+            if(should_initialize_data) fillArray(rawPointer[i], array_sizes, rng);
         }
     }
 
@@ -95,7 +95,7 @@ class DeviceArrayBatch_withRepetition
         for(unsigned int i=0; i<nb_arrays_distinct; i++)
         {
             rawPointer[i] = cudaNew<T>(array_sizes);
-            if(should_initialize_data) fillArray(rawPointer[i], nb_arrays, rng);
+            if(should_initialize_data) fillArray(rawPointer[i], array_sizes, rng);
         }
         // allocates blocks of identical batch elements
         for(unsigned int i=nb_arrays_distinct; i<nb_arrays; i++)
