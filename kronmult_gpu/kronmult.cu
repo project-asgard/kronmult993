@@ -1,4 +1,5 @@
 #include "kronmult.cuh"
+#include "kronmult.hpp"
 #include <cstdio>
 
 /*

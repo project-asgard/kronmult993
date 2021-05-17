@@ -1,7 +1,6 @@
 #include <bits/stdc++.h>
 #include <chrono>
 #include <iostream>
-//#include <kronmult.cuh>
 #include <kronmult_origin.hpp>
 #include <kronmult.hpp>
 #include "utils/utils_gpu.h"

@@ -10,7 +10,7 @@
  * does not use std::pow as it does an implicit float conversion that could lead to rounding errors for high
  * numbers
  */
-__host__ int pow_int(const int number, const int power);
+//__host__ int pow_int(const int number, const int power);
 
 /*
  * Computes output[K] += kron(matrix_list[K]) * input[K] for 0 <= k < batchCount
@@ -26,5 +26,5 @@ __host__ int pow_int(const int number, const int power);
  * the inputs should already be on the GPU.
  */
 template<typename T>
-__host__ cudaError kronmult_batched(const int matrix_count, const int matrix_size, T const * const matrix_list_batched[], const int matrix_stride,
-                                    T* input_batched[], T* output_batched[], T* workspace_batched[], const int nb_batch);
+//__host__ cudaError cuda_kronmult_batched(const int matrix_count, const int matrix_size, T const * const matrix_list_batched[], const int matrix_stride,
+//                                    T* input_batched[], T* output_batched[], T* workspace_batched[], const int nb_batch);
