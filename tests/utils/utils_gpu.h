@@ -2,6 +2,7 @@
 #include <vector>
 #include <stdexcept>
 #include <cuda.h>
+#include "data_generation.h"
 
 /*
  * throws an exception if an errorCode is meet
@@ -30,30 +31,6 @@ template<typename T> T* cudaNew(size_t size)
 }
 
 /*
- * wraps an array on device with a proper constructor and destructor
- */
-template<typename T>
-class DeviceArray
-{
-  public:
-    // lets you access the device pointer directly
-    T* rawPointer;
-
-    // creates an array of the given size on device
-    explicit DeviceArray(const size_t size)
-    {
-        rawPointer = cudaNew<T>(size);
-    }
-
-    // releases the memory
-    ~DeviceArray()
-    {
-        const cudaError errorCode = cudaFree(rawPointer);
-        checkCudaErrorCode(errorCode, "cudaFree (~DeviceArray)");
-    }
-};
-
-/*
  * wraps a batch of arrays on device with a proper constructor and destructor
  */
 template<typename T>
@@ -65,12 +42,17 @@ class DeviceArrayBatch
     size_t nb_arrays;
 
     // creates an array of `nb_arrays` arrays of size `array_sizes` on device
-    DeviceArrayBatch(const size_t array_sizes, const size_t nb_arrays_arg): nb_arrays(nb_arrays_arg)
+    DeviceArrayBatch(const size_t array_sizes, const size_t nb_arrays_arg, const bool should_initialize_data=false): nb_arrays(nb_arrays_arg)
     {
+        // random number generator for the data generation
+        std::random_device rd{};
+        std::default_random_engine rng{rd()};
+        // allocating the arrays
         rawPointer = cudaNew<T*>(nb_arrays);
         for(unsigned int i=0; i<nb_arrays; i++)
         {
             rawPointer[i] = cudaNew<T>(array_sizes);
+            if(should_initialize_data) fillArray(rawPointer[i], nb_arrays, rng);
         }
     }
 
@@ -103,12 +85,17 @@ class DeviceArrayBatch_withRepetition
 
     // creates an array of `nb_arrays` arrays of size `array_sizes` on device
     // contains only `nb_arrays_distinct` distinct elemnts
-    DeviceArrayBatch_withRepetition(const size_t array_sizes, const size_t nb_arrays, const size_t nb_arrays_distinct_arg=5): nb_arrays_distinct(nb_arrays_distinct_arg)
+    DeviceArrayBatch_withRepetition(const size_t array_sizes, const size_t nb_arrays, const size_t nb_arrays_distinct_arg=5, const bool should_initialize_data=false): nb_arrays_distinct(nb_arrays_distinct_arg)
     {
+        // random number generator for the data generation
+        std::random_device rd{};
+        std::default_random_engine rng{rd()};
+        // allocating the arrays
         rawPointer = cudaNew<T*>(nb_arrays);
         for(unsigned int i=0; i<nb_arrays_distinct; i++)
         {
             rawPointer[i] = cudaNew<T>(array_sizes);
+            if(should_initialize_data) fillArray(rawPointer[i], nb_arrays, rng);
         }
         // allocates blocks of identical batch elements
         for(unsigned int i=nb_arrays_distinct; i<nb_arrays; i++)

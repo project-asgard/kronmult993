@@ -62,7 +62,7 @@ void multiply_transpose(const T X[], const int nb_col_X,
     }
 }
 
-#ifndef KRONMULT_USE_BLAS
+#ifdef KRONMULT_USE_BLAS
 
 // BLAS function header: call to mkl, lapack, magma or others.
 // Col-Major by default.

@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include "data_generation.h"
 
 /*
  * wraps a batch of raw arrays with a proper constructor and destructor
@@ -14,13 +15,17 @@ class ArrayBatch
     std::vector<T*> batchRawPointers;
 
     // creates an array of `nb_arrays` arrays of size `array_sizes`
-    ArrayBatch(const size_t array_sizes, const size_t nb_arrays): batchRawPointers(nb_arrays)
+    ArrayBatch(const size_t array_sizes, const size_t nb_arrays, const bool should_initialize_data=false): batchRawPointers(nb_arrays)
     {
+        // random number generator for the data generation
+        std::random_device rd{};
+        std::default_random_engine rng{rd()};
         // allocates all the batch elements
         #pragma omp parallel for
         for(unsigned int i=0; i<nb_arrays; i++)
         {
             batchRawPointers[i] = new T[array_sizes];
+            if(should_initialize_data) fillArray(batchRawPointers[i], nb_arrays, rng);
         }
         // pointer to the batch elements
         rawPointer = batchRawPointers.data();
@@ -52,12 +57,16 @@ class ArrayBatch_withRepetition
 
     // creates an array of `nb_arrays` arrays of size `array_sizes`
     // contains only `nb_arrays_distinct` distinct elements
-    ArrayBatch_withRepetition(const size_t array_sizes, const size_t nb_arrays, const size_t nb_arrays_distinct=5): batchRawPointers(nb_arrays_distinct), batchRawPointers_withRepetition(nb_arrays)
+    ArrayBatch_withRepetition(const size_t array_sizes, const size_t nb_arrays, const size_t nb_arrays_distinct=5, const bool should_initialize_data=false): batchRawPointers(nb_arrays_distinct), batchRawPointers_withRepetition(nb_arrays)
     {
+        // random number generator for the data generation
+        std::random_device rd{};
+        std::default_random_engine rng{rd()};
         // allocates all the batch elements on device
         for(unsigned int i=0; i<nb_arrays_distinct; i++)
         {
             batchRawPointers[i] = new T[array_sizes];
+            if(should_initialize_data) fillArray(batchRawPointers[i], nb_arrays, rng);
         }
         // allocates blocks of identical batch elements
         #pragma omp parallel for
