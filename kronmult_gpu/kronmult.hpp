@@ -1,5 +1,13 @@
-#pragma once
-#include <cuda.h>
+//#pragma once
+#include <stdexcept>
+#include <cuda_runtime.h>
+//#include <cuda.h>
 
-cudaError kronmult_batched(const int matrix_count, const int matrix_size, T const * const matrix_list_batched[], const int matrix_stride,
-                                    T* input_batched[], T* output_batched[], T* workspace_batched[], const int nb_batch);
+namespace algo_993
+{
+    template <typename P>
+        cudaError kronmult_batched(const int matrix_count, const int matrix_size,
+                P const * const matrix_list_batched[], const int matrix_stride,
+                P* input_batched[], P* output_batched[], P* workspace_batched[],
+                const int nb_batch);
+}

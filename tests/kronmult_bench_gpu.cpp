@@ -12,6 +12,7 @@ using Number = double;
  * runs a benchmark with the given parameters
  * `nb_distinct_outputs` modelizes the fact that most outputs are identical
  */
+template <typename T>
 long runBench(std::function<void(const int, const int, T const *const [], const int, T *[], T *[], T *[], const int)> function,
               const int degree, const int dimension, const int grid_level, const std::string benchName, const int nb_distinct_outputs = 5)
 {

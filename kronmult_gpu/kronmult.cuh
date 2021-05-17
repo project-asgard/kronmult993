@@ -26,5 +26,5 @@
  * the inputs should already be on the GPU.
  */
 template<typename T>
-//__host__ cudaError cuda_kronmult_batched(const int matrix_count, const int matrix_size, T const * const matrix_list_batched[], const int matrix_stride,
-//                                    T* input_batched[], T* output_batched[], T* workspace_batched[], const int nb_batch);
+__host__ cudaError cuda_kronmult_batched(const int matrix_count, const int matrix_size, T const * const matrix_list_batched[], const int matrix_stride,
+                                    T* input_batched[], T* output_batched[], T* workspace_batched[], const int nb_batch);

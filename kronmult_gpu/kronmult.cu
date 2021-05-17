@@ -1,6 +1,6 @@
 #include "kronmult.cuh"
 #include "kronmult.hpp"
-#include <cstdio>
+//#include <cstdio>
 
 /*
  * computes number^power for integers
@@ -127,7 +127,7 @@ __host__ cudaError cuda_kronmult_batched(const int matrix_count, const int matri
  * float specialization
  */
 template<>
-__host__ cudaError kronmult_batched<double>(const int matrix_count, const int matrix_size, double const * const matrix_list_batched[], const int matrix_stride,
+__host__ cudaError algo_993::kronmult_batched<double>(const int matrix_count, const int matrix_size, double const * const matrix_list_batched[], const int matrix_stride,
                                             double* input_batched[], double* output_batched[], double* workspace_batched[], const int nb_batch)
 {
     return cuda_kronmult_batched(matrix_count, matrix_size, matrix_list_batched, matrix_stride, input_batched, output_batched, workspace_batched, nb_batch);
@@ -137,7 +137,7 @@ __host__ cudaError kronmult_batched<double>(const int matrix_count, const int ma
  * double specialization
  */
 template<>
-__host__ cudaError kronmult_batched<float>(const int matrix_count, const int matrix_size, float const * const matrix_list_batched[], const int matrix_stride,
+__host__ cudaError algo_993::kronmult_batched<float>(const int matrix_count, const int matrix_size, float const * const matrix_list_batched[], const int matrix_stride,
                                            float* input_batched[], float* output_batched[], float* workspace_batched[], const int nb_batch)
 {
     return cuda_kronmult_batched(matrix_count, matrix_size, matrix_list_batched, matrix_stride, input_batched, output_batched, workspace_batched, nb_batch);
