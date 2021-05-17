@@ -81,11 +81,13 @@ class DeviceArrayBatch_withRepetition
   public:
     // lets you access the device pointer directly
     T** rawPointer;
+    size_t array_sizes;
+    size_t nb_arrays;
     size_t nb_arrays_distinct;
 
     // creates an array of `nb_arrays` arrays of size `array_sizes` on device
     // contains only `nb_arrays_distinct` distinct elemnts
-    DeviceArrayBatch_withRepetition(const size_t array_sizes, const size_t nb_arrays, const size_t nb_arrays_distinct_arg=5, const bool should_initialize_data=false): nb_arrays_distinct(nb_arrays_distinct_arg)
+    DeviceArrayBatch_withRepetition(const size_t array_sizes_args, const size_t nb_arrays_args, const size_t nb_arrays_distinct_arg=5, const bool should_initialize_data=false): array_sizes(array_sizes_args), nb_arrays(nb_arrays_args), nb_arrays_distinct(nb_arrays_distinct_arg)
     {
         // random number generator for the data generation
         std::random_device rd{};
@@ -105,6 +107,15 @@ class DeviceArrayBatch_withRepetition
         }
     }
 
+    // deep copy constructor
+    DeviceArrayBatch_withRepetition(const DeviceArrayBatch_withRepetition& arraybatch): DeviceArrayBatch_withRepetition(arraybatch.array_sizes, arraybatch.nb_arrays, arraybatch.nb_arrays_distinct)
+    {
+        for(unsigned int i=0; i<nb_arrays_distinct; i++)
+        {
+            cudaMemcpy(rawPointer[i], arraybatch.rawPointer[i], sizeof(T)*array_sizes, cudaMemcpyDefault);
+        }
+    }
+
     // releases the memory
     ~DeviceArrayBatch_withRepetition()
     {
@@ -117,5 +128,25 @@ class DeviceArrayBatch_withRepetition
         // free the array of batch elements
         const cudaError errorCode = cudaFree(rawPointer);
         checkCudaErrorCode(errorCode, "cudaFree (~DeviceArrayBatch)");
+    }
+
+    // computes the maximum relative distance between two arraybatch
+    T distance(const DeviceArrayBatch_withRepetition& arraybatch)
+    {
+        const T epsilon = 1e-15;
+        T max_dist = 0.;
+
+        for(unsigned int i=0; i<nb_arrays_distinct; i++)
+        {
+            T* v1 = rawPointer[i];
+            const T* v2 = arraybatch.rawPointer[i];
+            for(unsigned int j = 0; j < array_sizes; j++)
+            {
+                const T dist = std::abs(v1[i] - v2[i]) / (std::abs(v1[i]) + epsilon);
+                if(dist > max_dist)  max_dist = dist;
+            }
+        }
+
+        return max_dist;
     }
 };

@@ -1,6 +1,5 @@
 #pragma once
-#include <cstring>
-#include <cuda_runtime.h>
+#include <device_launch_parameters.h>
 
 /*
  * converts row and col indices into a single index for a matrix store in col-major

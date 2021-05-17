@@ -1,5 +1,5 @@
+#include <device_launch_parameters.h>
 #include "kronmult.cuh"
-#include <cstdio>
 
 /*
  * computes number^power for integers

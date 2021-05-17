@@ -25,15 +25,15 @@ else()
     message(WARNING "Using kronmult_omp without BLAS support.")
 endif()
 
+# test
+add_executable(kronmult_test_cpu kronmult_test.cpp)
+target_link_libraries(kronmult_test_cpu PUBLIC kronmult_omp ${BLAS_LIBRARIES})
+add_test(NAME kronmult_test_cpu COMMAND ./kronmult_test)
+
 # benchmark
 add_executable(kronmult_bench kronmult_bench.cpp)
 target_link_libraries(kronmult_bench PUBLIC kronmult_omp ${BLAS_LIBRARIES})
 add_test(NAME kronmult_bench COMMAND ./kronmult_bench)
-
-# test
-add_executable(kronmult_test_cpu kronmult_test.cpp)
-target_link_libraries(kronmult_test_cpu PUBLIC kronmult_omp ${BLAS_LIBRARIES})
-add_test(NAME kronmult_test_cpu COMMAND ./kronmult_bench)
 
 #----------------------------------------------------------------------------------------
 # CUDA
@@ -44,7 +44,13 @@ if (NOT CUDA_FOUND)
     message(WARNING "Using kronmult_gpu without CUDA.")
 endif()
 
-# kronmult_gpu benchmark
+# test
+add_executable(kronmult_test_gpu kronmult_test_gpu.cpp)
+target_include_directories(kronmult_test_gpu PUBLIC ${CUDA_INCLUDE_DIRS}) # TODO needs kronmult_gpu?
+target_link_libraries(kronmult_test_gpu PUBLIC kronmult_gpu ${CUDA_LIBRARIES}) # TODO not needed?
+add_test(NAME kronmult_test_gpu COMMAND ./kronmult_test_gpu)
+
+# benchmark
 add_executable(kronmult_bench_gpu kronmult_bench_gpu.cpp)
 target_include_directories(kronmult_bench_gpu PUBLIC ${CUDA_INCLUDE_DIRS}) # TODO needs kronmult_gpu?
 target_link_libraries(kronmult_bench_gpu PUBLIC kronmult_gpu ${CUDA_LIBRARIES}) # TODO not needed?
