@@ -1,6 +1,7 @@
 #include <chrono>
 #include <iostream>
 #include <omp.h>
+#include <kronmult_origin.hpp>
 #include <kronmult.hpp>
 #include <bits/stdc++.h>
 #include "utils/utils_cpu.h"
@@ -66,17 +67,26 @@ int main()
 
     // running the benchmarks
     auto toy = runBench<Number>(&algo_993::kronmult_batched<Number>,4, 1, 2, "toy");
-    auto toy = runBench<Number>(&origin::kronmult_batched<Number>,4, 1, 2, "toy");
+    auto toy_origin = runBench<Number>(&origin::kronmult_batched<Number>,4, 1, 2, "toy");
     auto small =  runBench<Number>(&algo_993::kronmult_batched<Number>,4, 2, 4, "small");
+    auto small_origin =  runBench<Number>(&origin::kronmult_batched<Number>,4, 2, 4, "small");
     auto medium = runBench<Number>(&algo_993::kronmult_batched<Number>,6, 3, 6, "medium");
+    auto medium_origin = runBench<Number>(&origin::kronmult_batched<Number>,6, 3, 6, "medium");
     auto large =  runBench<Number>(&algo_993::kronmult_batched<Number>,8, 6, 7, "large");
+    auto large_origin =  runBench<Number>(&origin::kronmult_batched<Number>,8, 6, 7, "large");
     auto realistic = runBench<Number>(&algo_993::kronmult_batched<Number>,8, 6, 9, "realistic");
+    auto realistic_origin = runBench<Number>(&origin::kronmult_batched<Number>,8, 6, 9, "realistic");
 
     // display results
     std::cout << std::endl << "Results:" << std::endl
               << "toy: " << toy << "ms" << std::endl
+              << "toy origin: " << toy_origin << "ms" << std::endl
               << "small: " << small << "ms" << std::endl
+              << "small origin: " << small_origin << "ms" << std::endl
               << "medium: " << medium << "ms" << std::endl
+              << "medium origin: " << medium_origin << "ms" << std::endl
               << "large: " << large << "ms" << std::endl
-              << "realistic: " << realistic << "ms" << std::endl;
+              << "large origin: " << large_origin << "ms" << std::endl
+              << "realistic: " << realistic << "ms" << std::endl
+              << "realistic origin: " << realistic_origin << "ms" << std::endl;
 }
