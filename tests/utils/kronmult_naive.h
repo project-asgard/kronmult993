@@ -15,14 +15,14 @@ constexpr int _colmajor(const int row, const int col, const int stride)
  * the result is *added* to output
  */
 template<typename T>
-void matrix_vector_product(const T matrix[], const int size,
+void matrix_vector_product(const T matrix[], const int size, const int stride,
                            const T vector[], T output[])
 {
     for(int row = 0; row < size; row++)
     {
         for(int col = 0; col < size; col++)
         {
-            output[row] += matrix[_colmajor(row,col,size)] * vector[col];
+            output[row] += matrix[_colmajor(row,col,stride)] * vector[col];
         }
     }
 }
@@ -77,7 +77,7 @@ void kronmult_naive(const int matrix_count, const int matrix_size, T* matrix_lis
         stride_kron = size_kron;
     }
     // does the matrix vector product and adds the result to output
-    matrix_vector_product(kronmat, size_kron, input, output);
+    matrix_vector_product(kronmat, size_kron, stride_kron, input, output);
     if(matrix_count > 1) delete[] kronmat; // do not delete input matrix
 }
 

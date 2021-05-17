@@ -31,7 +31,6 @@ long runBench(const int degree, const int dimension, const int grid_level, const
     // allocates a problem
     // we do not put data in the vectors/matrices as it doesn't matter here
     std::cout << "Starting allocation." << std::endl;
-    std::cout << "Starting allocation." << std::endl;
     ArrayBatch<Number> matrix_list_batched(matrix_size * matrix_stride, batch_count * matrix_count);
     ArrayBatch<Number> input_batched(size_input, batch_count);
     ArrayBatch<Number> workspace_batched(size_input, batch_count);

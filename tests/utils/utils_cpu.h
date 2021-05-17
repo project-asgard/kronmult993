@@ -118,16 +118,4 @@ class ArrayBatch_withRepetition
 
         return max_dist;
     }
-
-    void display()
-    {
-        for(unsigned int i=0; i<nb_arrays_distinct; i++)
-        {
-            T* v = rawPointer[i];
-            for(unsigned int j = 0; j < array_sizes; j++)
-            {
-                std::cout << v[j] << std::endl;
-            }
-        }
-    }
 };

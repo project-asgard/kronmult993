@@ -40,13 +40,11 @@ Number runTest(const int degree, const int dimension, const int grid_level, cons
     kronmult_batched_naive(matrix_count, matrix_size, matrix_list_batched.rawPointer,
                            matrix_stride, input_batched.rawPointer, output_batched.rawPointer,
                            workspace_batched.rawPointer, batch_count);
-    //output_batched.display();
 
     std::cout << "Starting Kronmult" << std::endl;
     kronmult_batched(matrix_count, matrix_size, matrix_list_batched.rawPointer,
                      matrix_stride, input_batched.rawPointer, output_batched2.rawPointer,
                      workspace_batched.rawPointer, batch_count);
-    //output_batched2.display();
 
     std::cout << "Computing error" << std::endl;
     Number error = output_batched.distance(output_batched2);
