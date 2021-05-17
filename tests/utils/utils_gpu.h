@@ -9,11 +9,11 @@
  * does not use std::pow as it does an implicit float conversion that could lead to rounding errors for high
  * numbers
  */
-int pow_int(const int number, const int power)
-{
-    if(power == 0) return 1;
-    return number * pow_int(number, power-1);
-}
+int pow_int(const int number, const int power);
+//{
+//    if(power == 0) return 1;
+//    return number * pow_int(number, power-1);
+//}
 
 
 /*
