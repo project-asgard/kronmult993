@@ -1,8 +1,7 @@
 #include <iostream>
 #include <chrono>
-//#include <kronmult.cuh>
-#include "utils/utils_gpu.h"
 #include <kronmult.cuh>
+#include "utils/utils_gpu.h"
 
 // change this to run the bench in another precision
 using Number = double;
@@ -48,6 +47,7 @@ long runBench(const int degree, const int dimension, const int grid_level, const
     std::cout << "Runtime: " << milliseconds << "ms" << std::endl;
     for(int i =0; i<nb_distinct_outputs ; i++)
         std::cout << output_batched.rawPointer[i][0]<< std::endl;
+    //TODO: return error code in kronmult origin
     //checkCudaErrorCode(errorCode, "kronmult_batched");
 
     return milliseconds;
@@ -73,10 +73,10 @@ int main()
               << std::endl;
 
     // running the benchmarks
-    auto toy = runBench(8, 6, 9, "toy");
-    auto small = runBench(8, 6, 9, "small");
-    auto medium = runBench(8, 6, 9, "medium");
-    auto large = runBench(8, 6, 9, "large");
+    auto toy = runBench(4, 1, 2, "toy");
+    auto small = runBench(4, 2, 4, "small");
+    auto medium = runBench(6, 3, 6, "medium");
+    auto large = runBench(8, 6, 7, "large");
     auto realistic = runBench(8, 6, 9, "realistic");
 
     // display results

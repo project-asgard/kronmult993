@@ -1,10 +1,10 @@
-#include <iostream>
 #include <chrono>
+#include <iostream>
 #include <omp.h>
 #include <kronmult.hpp>
 #include "utils/utils_cpu.h"
 
-// change this to run the bench in another precision
+// use to try other precisions
 using Number = double;
 
 /*
@@ -16,7 +16,6 @@ long runBench(const int degree, const int dimension, const int grid_level, const
     // Kronmult parameters
     // TODO find proper formula for batch count, current one generates batches too large to be allocated without the min
     const int batch_count = std::min(pow_int(2,12), pow_int(2, grid_level) * pow_int(grid_level, dimension-1));
-    //const int batch_count = pow_int(2, std::min(13, grid_level*(dimension-1)));
     const int matrix_size = degree;
     const int matrix_count = dimension;
     const int size_input = pow_int(matrix_size, matrix_count);
@@ -31,7 +30,6 @@ long runBench(const int degree, const int dimension, const int grid_level, const
 
     // allocates a problem
     // we do not put data in the vectors/matrices as it doesn't matter here
-    std::cout << "Starting allocation." << std::endl;
     std::cout << "Starting allocation." << std::endl;
     ArrayBatch<Number> matrix_list_batched(matrix_size * matrix_stride, batch_count * matrix_count);
     ArrayBatch<Number> input_batched(size_input, batch_count);
