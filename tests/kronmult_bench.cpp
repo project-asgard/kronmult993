@@ -1,9 +1,9 @@
+#include <bits/stdc++.h>
 #include <chrono>
 #include <iostream>
 #include <omp.h>
 #include <kronmult_origin.hpp>
 #include <kronmult.hpp>
-#include <bits/stdc++.h>
 #include "utils/utils_cpu.h"
 
 // use to try other precisions
@@ -45,8 +45,8 @@ const int degree, const int dimension, const int grid_level, const std::string b
     std::cout << "Starting Kronmult" << std::endl;
     auto start = std::chrono::high_resolution_clock::now();
     function(matrix_count, matrix_size, matrix_list_batched.rawPointer,
-                     matrix_stride, input_batched.rawPointer, output_batched.rawPointer,
-                     workspace_batched.rawPointer, batch_count);
+             matrix_stride, input_batched.rawPointer, output_batched.rawPointer,
+             workspace_batched.rawPointer, batch_count);
     auto stop = std::chrono::high_resolution_clock::now();
     auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count();
     std::cout << "Runtime: " << milliseconds << "ms" << std::endl;
