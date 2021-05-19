@@ -113,12 +113,22 @@ __host__ cudaError cuda_kronmult_batched(const int matrix_count, const int matri
     cudaDeviceGetAttribute(&threadsPerBlock, cudaDevAttrMaxThreadsPerBlock, deviceId);
     if(size_input < threadsPerBlock) threadsPerBlock = size_input;
     //printf("threads-per-block:%d nb-blocks:%d\n", threadsPerBlock, nb_batch);
+    int nbBlocks = size_input / threadsPerBlock;
 
     // paralelize on batch elements
+    cudaStream_t stream1, stream2, stream3, stream4, stream[4] ;
+    cudaStreamCreate(&stream1);
+    cudaStreamCreate(&stream2);
+    cudaStreamCreate(&stream3);
+    cudaStreamCreate(&stream4);
+    stream[0] = stream1;
+    stream[1] = stream2;
+    stream[2] = stream3;
+    stream[3] = stream4;
     #pragma omp parallel for
     for(int i=0; i < nb_batch; i++)
     {
-        cuda_kronmult_thread<<<1, threadsPerBlock>>>(matrix_count, matrix_size,
+        cuda_kronmult_thread<<<1,nbBlocks, threadsPerBlock,stream[i%4]>>>(matrix_count, matrix_size,
                 matrix_list_batched[i*matrix_count], matrix_stride,
                 input_batched[i], size_input, output_batched[i], workspace_batched[i]);
     }
