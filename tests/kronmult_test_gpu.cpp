@@ -42,11 +42,12 @@ Number runTest(const int degree, const int dimension, const int grid_level, cons
                            workspace_batched.rawPointer, batch_count, gpuAlloc);
 
     std::cout << "Starting Kronmult" << std::endl;
-    kronmult_batched(matrix_count, matrix_size, matrix_list_batched.rawPointer,
-                     matrix_stride, input_batched.rawPointer, output_batched2.rawPointer,
-                     workspace_batched.rawPointer, batch_count);
+    cudaError errorCode = kronmult_batched(matrix_count, matrix_size, matrix_list_batched.rawPointer,
+                                           matrix_stride, input_batched.rawPointer, output_batched2.rawPointer,
+                                           workspace_batched.rawPointer, batch_count);
+    checkCudaErrorCode(errorCode, "kronmult_batched");
 
-    std::cout << "Computing error" << std::endl;
+    std::cout << "Computing the error" << std::endl;
     Number error = output_batched.distance(output_batched2);
     std::cout << "Error: " << error << std::endl;
 
