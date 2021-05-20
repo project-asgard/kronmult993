@@ -21,7 +21,7 @@ and pass the `KRONMULT_USE_BLAS` flag to your compiler.
 
 Include `kronmult.hpp` to get access to the `kronmult_batched` function 
 which computes `output[K] += kron(matrix_list[K]) * input[K]` for 0 <= k < batchCount 
-assuming that some of the output pointers will be equal (thus, requiring a thread-safe addition).
+assuming that some output pointers will be equal (thus, requiring a thread-safe addition).
 
 ```cpp
 #include <kronmult.hpp>

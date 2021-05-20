@@ -1,16 +1,17 @@
 # Kronmult
 
 This library implements the `kronmult_batched` function which computes `output[K] += kron(matrix_list[K]) * input[K]` (k being an index in a batch) 
-which is a batch version of the matrix product of the kronecker product of several matrices and a given vector.
+which is a batch version of the matrix product of the kronecker product of several matrices and a given *vector*.
 
 We provide efficient parallel implementations, for both CPU (using OpenMP) and GPU (using CUDA), that have been tuned for the needs of [ASGarD](https://github.com/project-asgard/asgard).
 In particular, we expect our inputs to be *col-major* matrices and some output pointers to overlap.
 
 # Theory
 
-We implement a variant of the backward version of algorithm 993 ([Algorithm 993: Efficient Computation with Kronecker Products](https://dl.acm.org/doi/abs/10.1145/3291041)), chosen to perform well on col-major matrices.
+We implement a variant of the backward version of algorithm 993 ([Algorithm 993: Efficient Computation with Kronecker Products](https://dl.acm.org/doi/abs/10.1145/3291041)), 
+chosen to perform well on col-major matrices and take into account the fact that the right side is a vector and not a matrix (thus not needing an additional transposition).
 
-We highly recommend reading [ON KRONECKER PRODUCTS, TENSOR PRODUCTS AND MATRIX DIFFERENTIAL CALCULUS by Stephen Pollock](https://www.le.ac.uk/economics/research/RePEc/lec/leecon/dp14-02.pdf) to get more familiar with the algebra and reshaping tricks techniques used in the implementation.
+We highly recommend reading [ON KRONECKER PRODUCTS, TENSOR PRODUCTS AND MATRIX DIFFERENTIAL CALCULUS by Stephen Pollock](https://www.le.ac.uk/economics/research/RePEc/lec/leecon/dp14-02.pdf) to get more familiar with the linear algebra and reshaping tricks used in the algorithm.
 
 ## Installation
 
@@ -19,7 +20,9 @@ See the corresponding folders for further information on both instalation and im
 
 ## Usage
 
-Include either `kronmult.hpp` (CPU) or `kronmult.cuh` (GPU) to get access to the `kronmult_batched` function.
+Include either `kronmult.hpp` (CPU) or `kronmult.cuh` (GPU) to get access to the `kronmult_batched` function
+which computes `output[K] += kron(matrix_list[K]) * input[K]` for 0 <= k < batchCount
+assuming that some output pointers will be equal (thus, requiring a thread-safe addition).
 
 ```cpp
 void kronmult_batched(const int matrix_number, const int matrix_size, T const * const matrix_list_batched[], const int matrix_stride,
