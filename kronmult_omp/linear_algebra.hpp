@@ -37,7 +37,9 @@ void transpose(const T input[], T output[], const int matrix_size, const int inp
  * Y is a `nb_col_X` by `size_M` matrix of stride `nb_col_X`
  * M_transposed is a `size_M` by `size_M` matrix of stride `size_M` that will be used to store M^T temporarily
  *
- * WARNING: the matrices are assumed to be stored in col-major order
+ * WARNING:
+ * the matrices are assumed to be stored in col-major order
+ * `transpose_workspace` will be used as temporary workspaces and thus modified
  */
 template<typename T>
 void multiply_transpose(const T X[], const int nb_col_X,

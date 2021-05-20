@@ -2,7 +2,7 @@
 #include <device_launch_parameters.h>
 
 /*
- * converts row and col indices into a single index for a matrix store in col-major
+ * converts row and col indices into a single index for a matrix stored in col-major
  * `stride` is usually the number of rows of the matrix
  */
 __device__ __forceinline__ constexpr int colmajor(const int row, const int col, const int stride)
@@ -33,11 +33,10 @@ __device__ void transpose(const T input[], T output[], const int matrix_size, co
 
 /*
  * Computes Y = X^T * M^T
- *      <=> Y[i,j] = X[k,i] * M[j,k]
  *
- * X is a `size_M` by `nb_col_X` matrix
- * M_transposed is a `size_M` by `size_M` matrix of stride `size_M`
- * Y is a `nb_col_X` by `size_M` matrix
+ * X is a `size_M` by `nb_col_X` matrix of stride `size_M`
+ * M_transposed is a `size_M` by `size_M` matrix of stride `size_M` that contains a precomputed M^T
+ * Y is a `nb_col_X` by `size_M` matrix of stride `nb_col_X`
  *
  * WARNING: the matrices are assumed to be stored in col-major order
  */
@@ -46,12 +45,13 @@ __device__ void multiply_transpose(const T X[], const int nb_col_X,
                                    const T M_transposed[], const int size_M,
                                    T Y[])
 {
-    // each thread t manage the input i such that i%t==0
-    // knowing that input_size = nb_col_X*size_M
+    // strided loop, each thread threadIdx.x manages the inputs i such that threadIdx.x % t==0
     for(int i = threadIdx.x; i < nb_col_X*size_M; i+=blockDim.x)
     {
+        // extracts the column and row number for the current thread
         const int colX = i / size_M;
         const int rowM = i - colX*size_M;
+        // computes the dot product to fill the [colX,rowM] cell of the matrix
         T dotprod = 0.;
         for(int k=0; k < size_M; k++)
         {

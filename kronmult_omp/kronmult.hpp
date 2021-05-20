@@ -22,7 +22,7 @@ int pow_int(const int number, const int power)
  * `transpose_workspace` is a vector of size `matrix_size`*`matrix_size` to store transposed matrices temporarily
  *
  * WARNINGS:
- * - `input` and `workspace` will be used as temporary workspaces and thus modified
+ * - `input`, `workspace` and `transpose_workspace` will be used as temporary workspaces and thus modified
  * - the matrices are assumed to be stored in col-major order
  * - the sizes are assumed to be correct
  */
