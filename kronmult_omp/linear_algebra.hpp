@@ -1,7 +1,7 @@
 #pragma once
 
 /*
- * converts row and col indices into a single index for a matrix store in col-major
+ * converts row and col indices into a single index for a matrix stored in col-major
  * `stride` is usually the number of rows of the matrix
  */
 constexpr int colmajor(const int row, const int col, const int stride)
@@ -31,12 +31,11 @@ void transpose(const T input[], T output[], const int matrix_size, const int inp
 
 /*
  * Computes Y = X^T * M^T
- *      <=> Y[i,j] = X[k,i] * M[j,k]
  *
- * X is a `size_M` by `nb_col_X` matrix
- * M is a `size_M` by `size_M` matrix of stride `matrix_stride`
- * Y is a `nb_col_X` by `size_M` matrix
- * M_transposed is a `size_M` by `size_M` matrix of stride `size_M` to store M^T temporarily
+ * X is a `size_M` by `nb_col_X` matrix of stride `size_M`
+ * M is a `size_M` by `size_M` matrix of stride `stride_M`
+ * Y is a `nb_col_X` by `size_M` matrix of stride `nb_col_X`
+ * M_transposed is a `size_M` by `size_M` matrix of stride `size_M` that will be used to store M^T temporarily
  *
  * WARNING: the matrices are assumed to be stored in col-major order
  */
@@ -45,7 +44,7 @@ void multiply_transpose(const T X[], const int nb_col_X,
                         const T M[], const int size_M, const int stride_M,
                         T Y[], T M_transposed[])
 {
-    // transpose the matrix to get a better alignement
+    // transpose the matrix to get a better cache behaviour
     transpose(M, M_transposed, size_M, stride_M);
 
     for(int colX=0; colX < nb_col_X; colX++)
@@ -75,6 +74,16 @@ extern "C"
     int sgemm_(char* transa, char* transb, int* m, int* n, int* k, float* alpha, float* A, int* lda, float* B, int* ldb, float* beta, float* C, int* ldc);
 }
 
+/*
+ * Computes Y = X^T * M^T in float precision
+ *
+ * X is a `size_M` by `nb_col_X` matrix of stride `size_M`
+ * M is a `size_M` by `size_M` matrix of stride `stride_M`
+ * Y is a `nb_col_X` by `size_M` matrix of stride `nb_col_X`
+ * M_transposed is a `size_M` by `size_M` matrix of stride `size_M` (it is ignored in this specialization)
+ *
+ * WARNING: the matrices are assumed to be stored in col-major order
+ */
 template<>
 void multiply_transpose<float>(const float X_const[], const int nb_col_X_const,
                                const float M_const[], const int size_M_const, const int stride_M_const,
@@ -95,6 +104,16 @@ void multiply_transpose<float>(const float X_const[], const int nb_col_X_const,
            &weight_XM, X, &size_M, M, &stride_M, &weight_Y, Y, &nb_col_X);
 }
 
+/*
+ * Computes Y = X^T * M^T in double precision
+ *
+ * X is a `size_M` by `nb_col_X` matrix of stride `size_M`
+ * M is a `size_M` by `size_M` matrix of stride `stride_M`
+ * Y is a `nb_col_X` by `size_M` matrix of stride `nb_col_X`
+ * M_transposed is a `size_M` by `size_M` matrix of stride `size_M` (it is ignored in this specialization)
+ *
+ * WARNING: the matrices are assumed to be stored in col-major order
+ */
 template<>
 void multiply_transpose<double>(const double X_const[], const int nb_col_X_const,
                                 const double M_const[], const int size_M_const, const int stride_M_const,
