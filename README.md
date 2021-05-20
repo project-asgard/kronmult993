@@ -1,11 +1,10 @@
 # Kronmult
 
-This library implements `kronmult(matrix_list, vector)`, which is the matrix product of the kronecker product of several matrices and a given vector, for both GPU (using CUDA) and CPU (using OpenMP).
+This library implements the `kronmult_batched` function which computes `output[K] += kron(matrix_list[K]) * input[K]` (k being an index in a batch) 
+which is a batch version of the matrix product of the kronecker product of several matrices and a given vector.
 
-It is fine-tuned for the needs of [ASGarD](https://github.com/project-asgard/asgard).
-In particular, we expect our inputs to be *col-major* square matrices.
-
-**WARNING: this readme is not up to date, you might need to search in different folders to get the functionalities you are looking for.**
+We provide efficient parallel implementations, for both CPU (using OpenMP) and GPU (using CUDA), that have been tuned for the needs of [ASGarD](https://github.com/project-asgard/asgard).
+In particular, we expect our inputs to be *col-major* matrices and some output pointers to overlap.
 
 # Theory
 
@@ -13,52 +12,30 @@ We implement a variant of the backward version of algorithm 993 ([Algorithm 993:
 
 We highly recommend reading [ON KRONECKER PRODUCTS, TENSOR PRODUCTS AND MATRIX DIFFERENTIAL CALCULUS by Stephen Pollock](https://www.le.ac.uk/economics/research/RePEc/lec/leecon/dp14-02.pdf) to get more familiar with the algebra and reshaping tricks techniques used in the implementation.
 
+## Installation
+
+You can use either the `kronmult_omp` (CPU paralelism) or the `kronmult_gpu` (GPU paralelism) CMake target to link this library.
+See the corresponding folders for further information on both instalation and implementations.
+
 ## Usage
 
-We implemented a basic and a batched version of the algorithm:
+Include either `kronmult.hpp` (CPU) or `kronmult.cuh` (GPU) to get access to the `kronmult_batched` function.
 
 ```cpp
-#include <kronmult/kronmult_openmp.hpp>
-
-void kronmult_openmp::kronmult(const int matrix_number, const int matrix_size, T const * const matrix_list[], const int matrix_stride,
-                               T input[], const int size_input,
-                               T workspace[], T transpose_workspace[])
-
-void kronmult_openmp::kronmult_batched(const int matrix_number, const int matrix_size, T const * const matrix_list_batched[], const int matrix_stride,
-                                       T* input_batched[],
-                                       T* output_batched[], T* workspace_batched[],
-                                       const int nb_batch)
+void kronmult_batched(const int matrix_number, const int matrix_size, T const * const matrix_list_batched[], const int matrix_stride,
+                      T* input_batched[], T* output_batched[], T* workspace_batched[], const int nb_batch)
 ```
 
-They both compute `output += kron(matrix_list) * input`.
+### Inputs
 
-- `matrix_list` is an array containing pointers to `matrix_number` square matrices of size `matrix_size` by `matrix_size` and stride `matrix_stride`
-- `input` is a `size_input` = `matrix_size`^`matrix_number` elements vector
-- `output` is a `size_input` elements vector, where the output will be stored
-- `workspace` is a `size_input` elements vector, to be used as workspace
-- `transpose_workspace` is a `matrix_size`^2 elements vector, to be used as workspace
+- `matrix_list_batched` is an array of `nb_batch`*`matrix_count` pointers to square matrices of size `matrix_size` by `matrix_size` and stride `matrix_stride`
+- `input_batched` is an array of `nb_batch` pointers to array of size `matrix_size`^`matrix_count`
+- `output_batched` is an array of `nb_batch` pointers to array of size `matrix_size`^`matrix_count`, to which the outputs will be added
+- `workspace` is an array of `nb_batch` pointers to array of size `matrix_size`^`matrix_count`, to be used as workspaces
 
-In the batched version all inputs are replaced by arrays with one input for each of the `nb_batch` batch elements except for `matrix_list_batched` which is an array of `nb_batch`*`matrix_number` pointers to square matrices.
+### Warnings
 
-**WARNINGS**:
-
-- `input` and `workspace` will be used as temporary workspaces and thus modified
-- the matrices should be stored in col-major order
-
-## Compilation
-
-To compile the code for CPU, run:
-
-```
-mkdir build && cd build
-cmake ../
-make
-```
-
-To compile the code for an Nvidia GPU, pass the `-DUSE_GPU=1` flag to CMake:
-
-```
-mkdir build && cd build
-cmake ../ -DUSE_GPU=1
-make
-```
+- `input_batched` and `workspace_batched` will be used as temporary workspaces and thus modified
+- the matrices are assumed to be stored in col-major order
+- the sizes are assumed to be correct
+- the gpu version assumes that all the arrays have already been allocated **on GPU** (using `cudaMalloc` for example)
