@@ -20,7 +20,7 @@ long runBench(const int degree, const int dimension, const int grid_level, const
     const int size_input = pow_int(matrix_size, matrix_count);
     const int matrix_stride = 67; // large prime integer, modelize the fact that columns are not adjascent in memory
     // nb_elements = batch_count * size_input * (2 + matrix_count*matrix_size*matrix_size) + nb_distinct_outputs*size_input;
-    const long max_element_number = 394632888320;
+    const long max_element_number = 395000000000;
     const int max_batch_count = (max_element_number - nb_distinct_outputs*size_input) / (size_input * (2 + matrix_count*matrix_size*matrix_size));
     const int batch_count = std::min(max_batch_count, pow_int(2, grid_level) * pow_int(grid_level, dimension-1));
     std::cout << benchName << " benchcase"
