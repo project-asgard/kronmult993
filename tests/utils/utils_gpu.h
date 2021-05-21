@@ -44,6 +44,9 @@ class DeviceArrayBatch
     // creates an array of `nb_arrays` arrays of size `array_sizes` on device
     DeviceArrayBatch(const size_t array_sizes, const size_t nb_arrays_arg, const bool should_initialize_data=false): nb_arrays(nb_arrays_arg)
     {
+        // gets device for prefetch
+        int device = -1;
+        cudaGetDevice(&device);
         // random number generator for the data generation
         std::random_device rd{};
         std::default_random_engine rng{rd()};
@@ -53,7 +56,9 @@ class DeviceArrayBatch
         {
             rawPointer[i] = cudaNew<T>(array_sizes);
             if(should_initialize_data) fillArray(rawPointer[i], array_sizes, rng);
+            cudaMemPrefetchAsync(rawPointer[i], array_sizes*sizeof(T), device);
         }
+        cudaMemPrefetchAsync(rawPointer, nb_arrays*sizeof(T*), device);
     }
 
     // releases the memory
@@ -87,8 +92,11 @@ class DeviceArrayBatch_withRepetition
 
     // creates an array of `nb_arrays` arrays of size `array_sizes` on device
     // contains only `nb_arrays_distinct` distinct elemnts
-    DeviceArrayBatch_withRepetition(const size_t array_sizes_args, const size_t nb_arrays_args, const size_t nb_arrays_distinct_arg=5, const bool should_initialize_data=false): array_sizes(array_sizes_args), nb_arrays(nb_arrays_args), nb_arrays_distinct(nb_arrays_distinct_arg)
+    DeviceArrayBatch_withRepetition(const size_t array_sizes_arg, const size_t nb_arrays_arg, const size_t nb_arrays_distinct_arg=5, const bool should_initialize_data=false): array_sizes(array_sizes_arg), nb_arrays(nb_arrays_arg), nb_arrays_distinct(nb_arrays_distinct_arg)
     {
+        // gets device for prefetch
+        int device = -1;
+        cudaGetDevice(&device);
         // random number generator for the data generation
         std::random_device rd{};
         std::default_random_engine rng{rd()};
@@ -98,6 +106,7 @@ class DeviceArrayBatch_withRepetition
         {
             rawPointer[i] = cudaNew<T>(array_sizes);
             if(should_initialize_data) fillArray(rawPointer[i], array_sizes, rng);
+            cudaMemPrefetchAsync(rawPointer[i], array_sizes*sizeof(T), device);
         }
         // allocates blocks of identical batch elements
         for(unsigned int i=nb_arrays_distinct; i<nb_arrays; i++)
@@ -105,6 +114,7 @@ class DeviceArrayBatch_withRepetition
             const int ptr_index = (i * nb_arrays_distinct) / nb_arrays;
             rawPointer[i] = rawPointer[ptr_index];
         }
+        cudaMemPrefetchAsync(rawPointer, nb_arrays*sizeof(T*), device);
     }
 
     // deep copy constructor
