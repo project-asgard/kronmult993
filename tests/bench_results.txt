@@ -1,20 +1,30 @@
 tests run on a haswell node (64 cores, exclusive reservation) or a GPU Tesla V100
 we use the MKL as our BLAS of choice
 we use the minimum of several runs as its the best representation of the actual computing time (noise is additive)
-we uses batches caped at 2^11 elements to fit in GPU memory
+large benchcase: batch_count:3903 matrix_size:8 matrix_count:6 size_input:262144 nb_distinct_outputs:5
 
 -------------------- DOUBLE --------------------
 
 GPU inputsize (min of 3 runs)
 toy: 2ms
 small: 2ms
-medium: 4ms
-large: 119ms
-realistic: 118ms
+medium: 3ms
+large: 221ms
+realistic: 222ms
 
 BLAS (min of 3 runs)
+toy: 28ms
+small: 17ms
+medium: 1ms
+large: 2496ms
+realistic: 2411ms
 
 No BLAS (min of 3 runs)
+toy: 28ms
+small: 0ms
+medium: 2ms
+large: 2916ms
+realistic: 2873ms
 
 Old Kronmult (min of 3 runs)
 
@@ -22,29 +32,25 @@ Old Kronmult (min of 3 runs)
 -------------------- FLOAT --------------------
 
 GPU inputsize (min of 3 runs)
-toy: 1ms
-small: 1ms
-medium: 3ms
-large: 471ms
-realistic: 492ms
+toy: 0ms
+small: 2ms
+medium: 4ms
+large: 414ms
+realistic: 417ms
 
 BLAS (min of 3 runs)
-toy: 2ms
-small: 9ms
-medium: 4ms
-large: 1322ms
-realistic: 1316ms
+toy: 22ms
+small: 13ms
+medium: 3ms
+large: 1352ms
+realistic: 1252ms
 
 No BLAS (min of 3 runs)
-toy: 0ms
+toy: 6ms
 small: 0ms
-medium: 3ms
-large: 2015ms
-realistic: 1968ms
+medium: 4ms
+large: 2108ms
+realistic: 1878ms
 
 Old Kronmult (min of 3 runs)
-toy: 0ms
-small: 0ms
-medium: 2ms
-large: 3601ms
-realistic: 3556ms
+
