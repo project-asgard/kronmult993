@@ -26,7 +26,7 @@ medium: 2ms
 large: 2916ms
 realistic: 2873ms
 
-Old Kronmult (min of 3 runs)
+Old Kronmult cpu (min of 3 runs)
 
 
 -------------------- FLOAT --------------------
@@ -52,5 +52,5 @@ medium: 4ms
 large: 2108ms
 realistic: 1878ms
 
-Old Kronmult (min of 3 runs)
+Old Kronmult cpu (min of 3 runs)
 
