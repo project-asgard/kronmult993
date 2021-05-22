@@ -9,6 +9,12 @@
 // use to try other precisions
 using Number = double;
 
+int pow_int_utils(const int number, const int power)
+{
+    if (power == 0) return 1;
+    return number * pow_int_utils(number, power - 1);
+}
+
 /*
  * runs a benchmark with the given parameters
  * `nb_distinct_outputs` modelizes the fact that most outputs are identical
@@ -20,11 +26,14 @@ const int degree, const int dimension, const int grid_level, const std::string b
 {
     // Kronmult parameters
     // TODO find proper formula for batch count, current one generates batches too large to be allocated without the min
-    const int batch_count = std::min(pow_int_utils(2,12), pow_int_utils(2, grid_level) * pow_int_utils(grid_level, dimension-1));
     const int matrix_size = degree;
     const int matrix_count = dimension;
     const int size_input = pow_int_utils(matrix_size, matrix_count);
     const int matrix_stride = 67; // large prime integer, modelize the fact that columns are not adjascent in memory
+    // nb_elements = batch_count * size_input * (2 + matrix_count*matrix_size*matrix_size) + nb_distinct_outputs*size_input;
+    const long max_element_number = 395000000000;
+    const int max_batch_count = (max_element_number - nb_distinct_outputs*size_input) / (size_input * (2 + matrix_count*matrix_size*matrix_size));
+    const int batch_count = std::min(max_batch_count, pow_int_utils(2, grid_level) * pow_int_utils(grid_level, dimension-1));
     std::cout << benchName << " benchcase"
               << " batch_count:" << batch_count
               << " matrix_size:" << matrix_size
