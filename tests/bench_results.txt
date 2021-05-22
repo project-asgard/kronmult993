@@ -27,7 +27,11 @@ large: 2916ms
 realistic: 2873ms
 
 Old Kronmult cpu (min of 3 runs)
-
+toy: 0ms
+small: 39ms
+medium: 2ms
+large: 4444ms
+realistic: 4141ms
 
 -------------------- FLOAT --------------------
 
@@ -53,4 +57,8 @@ large: 2108ms
 realistic: 1878ms
 
 Old Kronmult cpu (min of 3 runs)
-
+toy: 0ms
+small: 28ms
+medium: 3ms
+large: 3753ms
+realistic: 3389ms
