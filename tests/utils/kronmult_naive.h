@@ -1,6 +1,18 @@
 #pragma once
 
 /*
+ * encapsulates new in a function
+ */
+template<typename T>
+T* new_function(const size_t size)
+{
+    return new T[size];
+}
+// types used to encapsulate malloc and free in either gpu or cpu execution
+template<typename T> using MallocFunction = T*(size_t);
+using FreeFunction = void(void*);
+
+/*
  * converts row and col indices into a single index for a matrix store in col-major
  * `stride` is usually the number of rows of the matrix
  */
@@ -56,9 +68,12 @@ void kronecker_product(const T matrix1[], const int size1, const int stride1,
 
 /*
  * naive implementation of kronmult
+ * you can pass a GPU malloc and free to insure it works without segfaulting on gpu data
  */
 template<typename T>
-void kronmult_naive(const int matrix_count, const int matrix_size, T* matrix_list[], const int matrix_stride, const T input[], T output[], const bool gpuAlloc=false)
+void kronmult_naive(const int matrix_count, const int matrix_size, T* matrix_list[], const int matrix_stride,
+                    const T input[], T output[],
+                    MallocFunction<T> malloc_f = new_function, FreeFunction free_f = free)
 {
     // computes the kronnecker product
     T* kronmat = matrix_list[0];
@@ -68,18 +83,13 @@ void kronmult_naive(const int matrix_count, const int matrix_size, T* matrix_lis
     {
         // allocates new kronmat
         T* kronmat_new;
-        if(gpuAlloc) kronmat_new = cudaNew<T>(size_kron*matrix_size);
-        else kronmat_new = new T[size_kron*matrix_size];
+        kronmat_new = malloc_f(size_kron*matrix_size);
         // does kronecker product
         const T* matrix = matrix_list[m];
         kronecker_product(kronmat, size_kron, stride_kron, matrix, matrix_size, matrix_stride, kronmat_new);
         // replace old kronmat
         // do not delete input matrix
-        if(m > 1)
-        {
-            if(gpuAlloc) cudaFree(kronmat);
-            else delete[] kronmat;
-        }
+        if(m > 1) free_f(kronmat);
         kronmat = kronmat_new;
         size_kron = size_kron*matrix_size;
         stride_kron = size_kron;
@@ -88,25 +98,24 @@ void kronmult_naive(const int matrix_count, const int matrix_size, T* matrix_lis
     matrix_vector_product(kronmat, size_kron, stride_kron, input, output);
     // frees the memory
     // do not delete input matrix
-    if(matrix_count > 1)
-    {
-        if(gpuAlloc) cudaFree(kronmat);
-        else delete[] kronmat;
-    }
+    if(matrix_count > 1) free_f(kronmat);
 }
 
 /*
  * naive implementation of batched kronmult
+ * you can pass a GPU malloc and free to insure it works without segfaulting on gpu data
  */
 template<typename T>
 void kronmult_batched_naive(const int matrix_count, const int matrix_size, T* matrix_list_batched[], const int matrix_stride,
-                            T* input_batched[],  T* output_batched[], T* workspace_batched[], const int nb_batch, const bool gpuAlloc=false)
+                            T* input_batched[],  T* output_batched[], T* workspace_batched[], const int nb_batch,
+                            MallocFunction<T> malloc_f = new_function, FreeFunction free_f = free)
 {
     for(int i=0; i < nb_batch; i++)
     {
         T** matrix_list = &matrix_list_batched[i*matrix_count];
         T* input = input_batched[i];
         T* output = output_batched[i];
-        kronmult_naive(matrix_count, matrix_size, matrix_list, matrix_stride, input, output, gpuAlloc);
+        kronmult_naive(matrix_count, matrix_size, matrix_list, matrix_stride,
+                       input, output, malloc_f, free_f);
     }
 }
