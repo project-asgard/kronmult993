@@ -30,17 +30,6 @@ __device__ __forceinline__ constexpr int colmajor(const int row, const int col, 
  *
  * WARNING: the matrices are assumed to be stored in col-major order
  */
-/*template<typename T>
-__device__ void transpose(const T input[], T output[], const int matrix_size, const int input_stride)
-{
-    for(int r = 0; r < matrix_size; r++)
-    {
-        for(int c = 0; c < matrix_size; c++)
-        {
-            output[colmajor(r, c, matrix_size)] = input[colmajor(c, r, input_stride)];
-        }
-    }
-}*/
 template<typename T>
 __device__ void transpose(const T input[], T output[], const int matrix_size, const int input_stride)
 {
@@ -110,7 +99,7 @@ __device__ void cuda_kronmult(const int matrix_count, const int matrix_size, T c
     // iterates on the matrices from last to first
     for(int i = matrix_count-1; i >= 0; i--)
     {
-        // transpose the matrix (with a single thead) to get a better memory coalescing
+        // transpose the matrix to get a better memory coalescing
         T const * const matrix = matrix_list[i];
         transpose(matrix, transpose_workspace, matrix_size, matrix_stride);
         __syncthreads();
