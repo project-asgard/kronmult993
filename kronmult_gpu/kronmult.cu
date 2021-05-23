@@ -42,7 +42,6 @@ __device__ void transpose(const T input[], T output[], const int matrix_size, co
     }
 }
 
-
 /*
  * Computes Y = X^T * M^T
  *
