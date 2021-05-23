@@ -39,8 +39,8 @@ GPU inputsize (min of 3 runs)
 toy: 0ms
 small: 2ms
 medium: 4ms
-large: 414ms
-realistic: 417ms
+large: 100ms
+realistic: 99ms
 
 BLAS (min of 3 runs)
 toy: 22ms
