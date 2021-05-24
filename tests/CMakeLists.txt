@@ -21,9 +21,9 @@ find_package(BLAS)
 if (BLAS_FOUND)
     add_compile_definitions(KRONMULT_USE_BLAS)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${BLAS_LINKER_FLAGS}")
-else()
+else ()
     message(WARNING "Using kronmult_omp without BLAS support.")
-endif()
+endif ()
 
 # test
 add_executable(kronmult_test_cpu kronmult_test.cpp)
@@ -42,7 +42,7 @@ add_test(NAME kronmult_bench COMMAND ./kronmult_bench)
 find_package(CUDA)
 if (NOT CUDA_FOUND)
     message(WARNING "Using kronmult_gpu without CUDA.")
-endif()
+endif ()
 
 # test
 add_executable(kronmult_test_gpu kronmult_test_gpu.cpp)

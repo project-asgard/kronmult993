@@ -1,25 +1,26 @@
+#include "kronmult.cuh"
 #include <device_launch_parameters.h>
 #include <type_traits>
-#include "kronmult.cuh"
 
 /*
  * computes number^power for integers
  * does not care about performances
- * does not use std::pow as it does an implicit float conversion that could lead to rounding errors for large numbers
+ * does not use std::pow as it does an implicit float conversion that could lead to rounding errors for large
+ * numbers
  */
-__host__ int pow_int(const int number, const int power)
+__host__ int pow_int(int const number, int const power)
 {
-    if(power == 0) return 1;
-    return number * pow_int(number, power-1);
+    if (power == 0) return 1;
+    return number * pow_int(number, power - 1);
 }
 
 /*
  * converts row and col indices into a single index for a matrix stored in col-major
  * `stride` is usually the number of rows of the matrix
  */
-__device__ __forceinline__ constexpr int colmajor(const int row, const int col, const int stride)
+__device__ __forceinline__ constexpr int colmajor(int const row, int const col, int const stride)
 {
-    return row + col*stride;
+    return row + col * stride;
 }
 
 /*
@@ -31,12 +32,12 @@ __device__ __forceinline__ constexpr int colmajor(const int row, const int col, 
  * WARNING: the matrices are assumed to be stored in col-major order
  */
 template<typename T>
-__device__ void transpose(const T input[], T output[], const int matrix_size, const int input_stride)
+__device__ void transpose(T const input[], T output[], int const matrix_size, int const input_stride)
 {
-    for(int i = threadIdx.x; i < matrix_size*matrix_size; i+=blockDim.x)
+    for (int i = threadIdx.x; i < matrix_size * matrix_size; i += blockDim.x)
     {
-        const int c = i / matrix_size;
-        const int r = i - c*matrix_size;
+        int const c                         = i / matrix_size;
+        int const r                         = i - c * matrix_size;
         output[colmajor(r, c, matrix_size)] = input[colmajor(c, r, input_stride)];
     }
 }
@@ -51,37 +52,37 @@ __device__ void transpose(const T input[], T output[], const int matrix_size, co
  * WARNING: the matrices are assumed to be stored in col-major order
  */
 template<typename T>
-__device__ void multiply_transpose(const T X[], const int nb_col_X,
-                                   const T M_transposed[], const int size_M,
-                                   T Y[])
+__device__ void
+multiply_transpose(T const X[], int const nb_col_X, T const M_transposed[], int const size_M, T Y[])
 {
     // strided loop, each thread threadIdx.x manages the inputs i such that threadIdx.x % t==0
-    for(int i = threadIdx.x; i < nb_col_X*size_M; i+=blockDim.x)
+    for (int i = threadIdx.x; i < nb_col_X * size_M; i += blockDim.x)
     {
         // extracts the column and row number for the current thread
-        const int colX = i / size_M;
-        const int rowM = i - colX*size_M;
+        int const colX = i / size_M;
+        int const rowM = i - colX * size_M;
         // computes the dot product to fill the [colX,rowM] cell of the matrix
         T dotprod = 0.;
-        for(int k=0; k < size_M; k++)
+        for (int k = 0; k < size_M; k++)
         {
-            dotprod += X[colmajor(k,colX,size_M)] * M_transposed[colmajor(k,rowM,size_M)];
+            dotprod += X[colmajor(k, colX, size_M)] * M_transposed[colmajor(k, rowM, size_M)];
         }
         // this sync is there to synchronise the threads for significantly improved performance in float
         // it does not impact correctness
-        if(std::is_same<float, T>::value) __syncthreads();
-        Y[colmajor(colX,rowM,nb_col_X)] = dotprod;
+        if (std::is_same<float, T>::value) __syncthreads();
+        Y[colmajor(colX, rowM, nb_col_X)] = dotprod;
     }
 }
 
 /*
  * Computes output += kron(matrix_list) * input while insuring that the addition to output is thread-safe
  *
- * `matrix_list` is an array containing pointers to `matrix_number` square matrices of size `matrix_size` by `matrix_size` and stride `matrix_stride`
- * `input` is a `size_input` (`matrix_size`^`matrix_number`) elements vector
- * `output` is a `size_input` elements vector, to which the output of the multiplication will be added
+ * `matrix_list` is an array containing pointers to `matrix_number` square matrices of size `matrix_size` by
+ * `matrix_size` and stride `matrix_stride` `input` is a `size_input` (`matrix_size`^`matrix_number`) elements
+ * vector `output` is a `size_input` elements vector, to which the output of the multiplication will be added
  * `workspace` is a `size_input` elements vector, to be used as workspace
- * `transpose_workspace` is a vector of size `matrix_size`*`matrix_size` to store transposed matrices temporarily
+ * `transpose_workspace` is a vector of size `matrix_size`*`matrix_size` to store transposed matrices
+ * temporarily
  *
  * WARNINGS:
  * - `input`, `workspace` and `transpose_workspace` will be used as temporary workspaces and thus modified
@@ -89,18 +90,18 @@ __device__ void multiply_transpose(const T X[], const int nb_col_X,
  * - the sizes are assumed to be correct
  */
 template<typename T>
-__device__ void cuda_kronmult(const int matrix_count, const int matrix_size, T const * const matrix_list[], const int matrix_stride,
-                              T input[], const int size_input,
-                              T output[], T workspace[], T transpose_workspace[])
+__device__ void cuda_kronmult(int const matrix_count, int const matrix_size, T const *const matrix_list[],
+                              int const matrix_stride, T input[], int const size_input, T output[],
+                              T workspace[], T transpose_workspace[])
 {
     // how many column should `input` have for the multiplications to be legal
-    const int nb_col_input = size_input / matrix_size;
+    int const nb_col_input = size_input / matrix_size;
 
     // iterates on the matrices from last to first
-    for(int i = matrix_count-1; i >= 0; i--)
+    for (int i = matrix_count - 1; i >= 0; i--)
     {
         // transpose the matrix to get a better memory coalescing
-        T const * const matrix = matrix_list[i];
+        T const *const matrix = matrix_list[i];
         transpose(matrix, transpose_workspace, matrix_size, matrix_stride);
         __syncthreads();
 
@@ -109,16 +110,17 @@ __device__ void cuda_kronmult(const int matrix_count, const int matrix_size, T c
         __syncthreads();
 
         // swap `input` and `workspace` such that `input` contains once again the input
-        // note that, while they have the same size flattened, the shape (nb_columns and nb_rows) of `input` and `workspace` are different
-        // this is on purpose and equivalent to a reshape operation that is actually needed by the algorithm
-        T* temp = input;
-        input = workspace;
+        // note that, while they have the same size flattened, the shape (nb_columns and nb_rows) of `input`
+        // and `workspace` are different this is on purpose and equivalent to a reshape operation that is
+        // actually needed by the algorithm
+        T *temp   = input;
+        input     = workspace;
         workspace = temp;
     }
 
     // adds result to output in a thread-safe way
     // strided loop, each thread threadIdx.x manages the input i such that i % threadIdx.x==0
-    for(int i = threadIdx.x; i < size_input; i+=blockDim.x)
+    for (int i = threadIdx.x; i < size_input; i += blockDim.x)
     {
         atomicAdd(&output[i], input[i]);
     }
@@ -132,31 +134,33 @@ __device__ void cuda_kronmult(const int matrix_count, const int matrix_size, T c
  * and calls kronmult on them
  */
 template<typename T>
-__global__ void cuda_kronmult_batchelement(const int matrix_count, const int matrix_size, T const * const matrix_list_batched[], const int matrix_stride,
-                                           T* input_batched[], const int size_input,
-                                           T* output_batched[], T* workspace_batched[],
-                                           const int nb_batch)
+__global__ void cuda_kronmult_batchelement(int const matrix_count, int const matrix_size,
+                                           T const *const matrix_list_batched[], int const matrix_stride,
+                                           T *input_batched[], int const size_input, T *output_batched[],
+                                           T *workspace_batched[], int const nb_batch)
 {
     // each block corresponds to a single batch element
-    const int batchId = blockIdx.x;
+    int const batchId = blockIdx.x;
     // gets the inputs for a given batch element
-    T const * const * matrix_list = &matrix_list_batched[batchId*matrix_count];
-    T* input = input_batched[batchId];
-    T* output = output_batched[batchId];
-    T* workspace = workspace_batched[batchId];
+    T const *const *matrix_list = &matrix_list_batched[batchId * matrix_count];
+    T *input                    = input_batched[batchId];
+    T *output                   = output_batched[batchId];
+    T *workspace                = workspace_batched[batchId];
 
     // uses a thread to allocates the transpose workspace
     // in shared memory for improved performances
-    __shared__ T* transpose_workspace;
-    if(threadIdx.x == 0) transpose_workspace = new T[matrix_size*matrix_size];
+    __shared__ T *transpose_workspace;
+    if (threadIdx.x == 0) transpose_workspace = new T[matrix_size * matrix_size];
     __syncthreads();
 
     // does the kronmult computations
-    cuda_kronmult<T>(matrix_count, matrix_size, matrix_list, matrix_stride, input, size_input, output, workspace, transpose_workspace);
+    cuda_kronmult<T>(matrix_count, matrix_size, matrix_list, matrix_stride,
+                     input, size_input, output,
+                     workspace, transpose_workspace);
 
     // frees the tranpose workspace memory
     __syncthreads();
-    if(threadIdx.x == 0) delete[] transpose_workspace;
+    if (threadIdx.x == 0) delete[] transpose_workspace;
 }
 
 /*
@@ -164,11 +168,13 @@ __global__ void cuda_kronmult_batchelement(const int matrix_count, const int mat
  * we expect the inputs to already be on the GPU
  */
 template<typename T>
-__host__ cudaError cuda_kronmult_batched(const int matrix_count, const int matrix_size, T const * const matrix_list_batched[], const int matrix_stride,
-                                         T* input_batched[], T* output_batched[], T* workspace_batched[], const int nb_batch)
+__host__ cudaError cuda_kronmult_batched(int const matrix_count, int const matrix_size,
+                                         T const *const matrix_list_batched[], int const matrix_stride,
+                                         T *input_batched[], T *output_batched[], T *workspace_batched[],
+                                         int const nb_batch)
 {
     // numbers of elements in the input vector
-    int size_input = pow_int(matrix_size, matrix_count);
+    int const size_input = pow_int(matrix_size, matrix_count);
 
     // each block will take care of a single batch element
     // the threads within a block will loop over input_size
@@ -176,11 +182,12 @@ __host__ cudaError cuda_kronmult_batched(const int matrix_count, const int matri
     cudaGetDevice(&deviceId);
     int threadsPerBlock;
     cudaDeviceGetAttribute(&threadsPerBlock, cudaDevAttrMaxThreadsPerBlock, deviceId);
-    if(size_input < threadsPerBlock) threadsPerBlock = size_input;
+    if (size_input < threadsPerBlock) threadsPerBlock = size_input;
 
     // parallelize over batch elements
-    cuda_kronmult_batchelement<<<nb_batch, threadsPerBlock>>>(matrix_count, matrix_size, matrix_list_batched, matrix_stride,
-                                                              input_batched, size_input, output_batched, workspace_batched, nb_batch);
+    cuda_kronmult_batchelement<<<nb_batch, threadsPerBlock>>>(matrix_count, matrix_size, matrix_list_batched,
+                                                              matrix_stride, input_batched, size_input,
+                                                              output_batched, workspace_batched, nb_batch);
 
     // waits for kernel to finish and returns the error code
     return cudaDeviceSynchronize();
@@ -190,18 +197,25 @@ __host__ cudaError cuda_kronmult_batched(const int matrix_count, const int matri
  * double specialization of kronmult_batched
  */
 template<>
-__host__ cudaError kronmult_batched<double>(const int matrix_count, const int matrix_size, double const * const matrix_list_batched[], const int matrix_stride,
-                                            double* input_batched[], double* output_batched[], double* workspace_batched[], const int nb_batch)
+__host__ cudaError kronmult_batched<double>(int const matrix_count, int const matrix_size,
+                                            double const *const matrix_list_batched[],
+                                            int const matrix_stride, double *input_batched[],
+                                            double *output_batched[], double *workspace_batched[],
+                                            int const nb_batch)
 {
-    return cuda_kronmult_batched(matrix_count, matrix_size, matrix_list_batched, matrix_stride, input_batched, output_batched, workspace_batched, nb_batch);
+    return cuda_kronmult_batched(matrix_count, matrix_size, matrix_list_batched, matrix_stride, input_batched,
+                                 output_batched, workspace_batched, nb_batch);
 }
 
 /*
  * float specialization of kronmult_batched
  */
 template<>
-__host__ cudaError kronmult_batched<float>(const int matrix_count, const int matrix_size, float const * const matrix_list_batched[], const int matrix_stride,
-                                           float* input_batched[], float* output_batched[], float* workspace_batched[], const int nb_batch)
+__host__ cudaError kronmult_batched<float>(int const matrix_count, int const matrix_size,
+                                           float const *const matrix_list_batched[], int const matrix_stride,
+                                           float *input_batched[], float *output_batched[],
+                                           float *workspace_batched[], int const nb_batch)
 {
-    return cuda_kronmult_batched(matrix_count, matrix_size, matrix_list_batched, matrix_stride, input_batched, output_batched, workspace_batched, nb_batch);
+    return cuda_kronmult_batched(matrix_count, matrix_size, matrix_list_batched, matrix_stride, input_batched,
+                                 output_batched, workspace_batched, nb_batch);
 }

@@ -1,7 +1,7 @@
 #pragma once
-#include <vector>
-#include <algorithm>
 #include "data_generation.h"
+#include <algorithm>
+#include <vector>
 
 /*
  * wraps a batch of arrays on device with a proper constructor and destructor
@@ -11,21 +11,23 @@ class ArrayBatch
 {
   public:
     // lets you access the data pointer directly
-    T** rawPointer;
+    T **rawPointer;
     size_t nb_arrays;
 
     // creates an array of `nb_arrays` arrays of size `array_sizes` on device
-    ArrayBatch(const size_t array_sizes, const size_t nb_arrays_arg, const bool should_initialize_data=false): nb_arrays(nb_arrays_arg)
+    ArrayBatch(size_t const array_sizes, size_t const nb_arrays_arg,
+               bool const should_initialize_data = false)
+        : nb_arrays(nb_arrays_arg)
     {
         // random number generator for the data generation
         std::random_device rd{};
         std::default_random_engine rng{rd()};
         // allocating the arrays
-        rawPointer = new T*[nb_arrays];
-        for(unsigned int i=0; i<nb_arrays; i++)
+        rawPointer = new T *[nb_arrays];
+        for (unsigned int i = 0; i < nb_arrays; i++)
         {
             rawPointer[i] = new T[array_sizes];
-            if(should_initialize_data) fillArray(rawPointer[i], array_sizes, rng);
+            if (should_initialize_data) fillArray(rawPointer[i], array_sizes, rng);
         }
     }
 
@@ -33,7 +35,7 @@ class ArrayBatch
     ~ArrayBatch()
     {
         // frees the batch elements
-        for(unsigned int i=0; i<nb_arrays; i++)
+        for (unsigned int i = 0; i < nb_arrays; i++)
         {
             delete[] rawPointer[i];
         }
@@ -51,37 +53,41 @@ class ArrayBatch_withRepetition
 {
   public:
     // lets you access the device pointer directly
-    T** rawPointer;
+    T **rawPointer;
     size_t array_sizes;
     size_t nb_arrays;
     size_t nb_arrays_distinct;
 
     // creates an array of `nb_arrays` arrays of size `array_sizes` on device
     // contains only `nb_arrays_distinct` distinct elemnts
-    ArrayBatch_withRepetition(const size_t array_sizes_args, const size_t nb_arrays_args, const size_t nb_arrays_distinct_arg=5, const bool should_initialize_data=false): array_sizes(array_sizes_args), nb_arrays(nb_arrays_args), nb_arrays_distinct(nb_arrays_distinct_arg)
+    ArrayBatch_withRepetition(size_t const array_sizes_args, size_t const nb_arrays_args,
+                              size_t const nb_arrays_distinct_arg = 5,
+                              bool const should_initialize_data   = false)
+        : array_sizes(array_sizes_args), nb_arrays(nb_arrays_args), nb_arrays_distinct(nb_arrays_distinct_arg)
     {
         // random number generator for the data generation
         std::random_device rd{};
         std::default_random_engine rng{rd()};
         // allocating the arrays
-        rawPointer = new T*[nb_arrays];
-        for(unsigned int i=0; i<nb_arrays_distinct; i++)
+        rawPointer = new T *[nb_arrays];
+        for (unsigned int i = 0; i < nb_arrays_distinct; i++)
         {
             rawPointer[i] = new T[array_sizes];
-            if(should_initialize_data) fillArray(rawPointer[i], array_sizes, rng);
+            if (should_initialize_data) fillArray(rawPointer[i], array_sizes, rng);
         }
         // allocates blocks of identical batch elements
-        for(unsigned int i=nb_arrays_distinct; i<nb_arrays; i++)
+        for (unsigned int i = nb_arrays_distinct; i < nb_arrays; i++)
         {
-            const int ptr_index = (i * nb_arrays_distinct) / nb_arrays;
-            rawPointer[i] = rawPointer[ptr_index];
+            int const ptr_index = (i * nb_arrays_distinct) / nb_arrays;
+            rawPointer[i]       = rawPointer[ptr_index];
         }
     }
 
     // deep copy constructor
-    ArrayBatch_withRepetition(const ArrayBatch_withRepetition& arraybatch): ArrayBatch_withRepetition(arraybatch.array_sizes, arraybatch.nb_arrays, arraybatch.nb_arrays_distinct)
+    ArrayBatch_withRepetition(ArrayBatch_withRepetition const &arraybatch)
+        : ArrayBatch_withRepetition(arraybatch.array_sizes, arraybatch.nb_arrays, arraybatch.nb_arrays_distinct)
     {
-        for(unsigned int i=0; i<nb_arrays_distinct; i++)
+        for (unsigned int i = 0; i < nb_arrays_distinct; i++)
         {
             std::copy_n(arraybatch.rawPointer[i], array_sizes, rawPointer[i]);
         }
@@ -91,7 +97,7 @@ class ArrayBatch_withRepetition
     ~ArrayBatch_withRepetition()
     {
         // frees the batch elements
-        for(unsigned int i=0; i<nb_arrays_distinct; i++)
+        for (unsigned int i = 0; i < nb_arrays_distinct; i++)
         {
             delete[] rawPointer[i];
         }
@@ -100,19 +106,19 @@ class ArrayBatch_withRepetition
     }
 
     // computes the maximum relative distance between two arraybatch
-    T distance(const ArrayBatch_withRepetition& arraybatch)
+    T distance(ArrayBatch_withRepetition const &arraybatch)
     {
-        const T epsilon = 1e-15;
-        T max_dist = 0.;
+        T const epsilon = 1e-15;
+        T max_dist      = 0.;
 
-        for(unsigned int i=0; i<nb_arrays_distinct; i++)
+        for (unsigned int i = 0; i < nb_arrays_distinct; i++)
         {
-            T* v1 = rawPointer[i];
-            const T* v2 = arraybatch.rawPointer[i];
-            for(unsigned int j = 0; j < array_sizes; j++)
+            T *v1       = rawPointer[i];
+            T const *v2 = arraybatch.rawPointer[i];
+            for (unsigned int j = 0; j < array_sizes; j++)
             {
-                const T dist = std::abs(v1[i] - v2[i]) / (std::abs(v1[i]) + epsilon);
-                if(dist > max_dist)  max_dist = dist;
+                T const dist = std::abs(v1[i] - v2[i]) / (std::abs(v1[i]) + epsilon);
+                if (dist > max_dist) max_dist = dist;
             }
         }
 
