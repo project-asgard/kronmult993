@@ -108,7 +108,7 @@ void kronmult_naive(int const matrix_count, int const matrix_size, T *matrix_lis
 template<typename T>
 void kronmult_batched_naive(int const matrix_count, int const matrix_size, T* matrix_list_batched[],
                             int const matrix_stride, T* input_batched[], T* output_batched[],
-                            T* workspace_batched[], int const nb_batch,
+                            T* /*workspace_batched*/[], int const nb_batch,
                             MallocFunction<T> malloc_f = new_function, FreeFunction free_f = free)
 {
     for (int i = 0; i < nb_batch; i++)

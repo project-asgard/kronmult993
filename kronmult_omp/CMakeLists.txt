@@ -11,4 +11,4 @@ target_include_directories(kronmult_omp
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
         $<INSTALL_INTERFACE:>)
 
-# TODO find a way to check whether blas and openmp are linked and throw a warning otherwise
+# TODO is there a way to check whether blas and openmp are linked and throw a warning otherwise

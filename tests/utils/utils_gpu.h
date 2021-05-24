@@ -1,6 +1,7 @@
 #pragma once
 #include "data_generation.h"
 #include <cuda.h>
+#include <cuda_runtime.h>
 #include <stdexcept>
 #include <vector>
 
