@@ -1,6 +1,6 @@
 #pragma once
 #include <vector>
-#include <cstring>
+#include <algorithm>
 #include "data_generation.h"
 
 /*
@@ -83,7 +83,7 @@ class ArrayBatch_withRepetition
     {
         for(unsigned int i=0; i<nb_arrays_distinct; i++)
         {
-            std::memcpy(rawPointer[i], arraybatch.rawPointer[i], sizeof(T)*array_sizes);
+            std::copy_n(arraybatch.rawPointer[i], array_sizes, rawPointer[i]);
         }
     }
 

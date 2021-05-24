@@ -1,5 +1,6 @@
 #pragma once
 #include "linear_algebra.hpp"
+#include <memory>
 
 /*
  * computes number^power for integers
@@ -83,7 +84,7 @@ void kronmult_batched(const int matrix_count, const int matrix_size, T const * c
     {
         // workspace that will be used to store matrix transpositions
         // only one, allocated once, per thread
-        T* transpose_workspace = new T[matrix_size*matrix_size];
+        std::unique_ptr<T[]> transpose_workspace(new T[matrix_size*matrix_size]);
 
         // computes kronmult for all batch elements
         #pragma omp for
@@ -93,9 +94,7 @@ void kronmult_batched(const int matrix_count, const int matrix_size, T const * c
             T* input = input_batched[i];
             T* output = output_batched[i];
             T* workspace = workspace_batched[i];
-            kronmult<T>(matrix_count, matrix_size, matrix_list, matrix_stride, input, size_input, output, workspace, transpose_workspace);
+            kronmult<T>(matrix_count, matrix_size, matrix_list, matrix_stride, input, size_input, output, workspace, transpose_workspace.get());
         }
-
-        delete[] transpose_workspace;
     }
 }
