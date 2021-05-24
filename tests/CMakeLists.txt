@@ -46,12 +46,12 @@ endif ()
 
 # test
 add_executable(kronmult_test_gpu kronmult_test_gpu.cpp)
-target_include_directories(kronmult_test_gpu PUBLIC ${CUDA_INCLUDE_DIRS}) # TODO needs kronmult_gpu?
-target_link_libraries(kronmult_test_gpu PUBLIC kronmult_gpu ${CUDA_LIBRARIES}) # TODO not needed?
+target_include_directories(kronmult_test_gpu PUBLIC ${CUDA_INCLUDE_DIRS})
+target_link_libraries(kronmult_test_gpu PUBLIC kronmult_gpu)
 add_test(NAME kronmult_test_gpu COMMAND ./kronmult_test_gpu)
 
 # benchmark
 add_executable(kronmult_bench_gpu kronmult_bench_gpu.cpp)
-target_include_directories(kronmult_bench_gpu PUBLIC ${CUDA_INCLUDE_DIRS}) # TODO needs kronmult_gpu?
-target_link_libraries(kronmult_bench_gpu PUBLIC kronmult_gpu ${CUDA_LIBRARIES}) # TODO not needed?
+target_include_directories(kronmult_bench_gpu PUBLIC ${CUDA_INCLUDE_DIRS})
+target_link_libraries(kronmult_bench_gpu PUBLIC kronmult_gpu)
 add_test(NAME kronmult_bench_gpu COMMAND ./kronmult_bench_gpu)
