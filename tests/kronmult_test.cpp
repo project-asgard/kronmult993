@@ -48,6 +48,7 @@ Number runTest(int const degree, int const dimension, int const grid_level, std:
     std::cout << "Computing error" << std::endl;
     Number const error = output_batched.distance(output_batched2);
     std::cout << "Error: " << error << std::endl;
+    if(error > 1e-7) std::cerr << "Test failed!" << std::endl;
 
     return error;
 }
@@ -59,7 +60,7 @@ int main()
 {
     std::cout << "Starting tests (" << omp_get_num_procs() << " procs)." << std::endl;
     #ifdef KRONMULT_USE_BLAS
-        std::cout << "BLAS detected properly." << std::endl;
+        std::cout << "Using BLAS." << std::endl;
     #endif
 
     // running the benchmarks

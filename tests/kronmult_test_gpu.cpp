@@ -49,6 +49,7 @@ Number runTest(int const degree, int const dimension, int const grid_level, std:
     std::cout << "Computing the error" << std::endl;
     Number const error = output_batched.distance(output_batched2);
     std::cout << "Error: " << error << std::endl;
+    if(error > 1e-7) std::cerr << "Test failed!" << std::endl;
 
     return error;
 }
