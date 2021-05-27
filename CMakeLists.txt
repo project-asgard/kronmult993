@@ -1,9 +1,14 @@
 cmake_minimum_required(VERSION 3.8)
-project(kronmult LANGUAGES CUDA CXX)
+project(kronmult)
 
-# add kronmult implementations
+# add kronmult cpu implementation
 add_subdirectory(kronmult_omp)
-add_subdirectory(kronmult_gpu)
+
+# add kronmult gpu implementation if cuda is available
+find_package(CUDA)
+if (CUDA_FOUND)
+    add_subdirectory(kronmult_gpu)
+endif()
 
 # adds tests
 include(CTest)

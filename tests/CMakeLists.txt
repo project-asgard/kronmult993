@@ -1,10 +1,11 @@
-set(CMAKE_CXX_STANDARD 17)
+cmake_minimum_required(VERSION 3.8)
 
 # compilation flags
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O3 -march=native")
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -march=native")
 
 #----------------------------------------------------------------------------------------
-# OpenMP
+# CPU
 
 # adds OpenMP flags and lib
 find_package(OpenMP)
@@ -36,22 +37,22 @@ target_link_libraries(kronmult_bench PUBLIC kronmult_omp ${BLAS_LIBRARIES})
 add_test(NAME kronmult_bench COMMAND ./kronmult_bench)
 
 #----------------------------------------------------------------------------------------
-# CUDA
+# GPU
 
-# checks whether CUDA is available
+# add CUDA lib
 find_package(CUDA)
-if (NOT CUDA_FOUND)
-    message(WARNING "Using kronmult_gpu without CUDA.")
+if (CUDA_FOUND)
+    enable_language(CUDA)
+    # test
+    add_executable(kronmult_test_gpu kronmult_test_gpu.cpp)
+    target_include_directories(kronmult_test_gpu PUBLIC ${CUDA_INCLUDE_DIRS})
+    target_link_libraries(kronmult_test_gpu PUBLIC kronmult_gpu)
+    add_test(NAME kronmult_test_gpu COMMAND ./kronmult_test_gpu)
+    # benchmark
+    add_executable(kronmult_bench_gpu kronmult_bench_gpu.cpp)
+    target_include_directories(kronmult_bench_gpu PUBLIC ${CUDA_INCLUDE_DIRS})
+    target_link_libraries(kronmult_bench_gpu PUBLIC kronmult_gpu)
+    add_test(NAME kronmult_bench_gpu COMMAND ./kronmult_bench_gpu)
+else ()
+    message(WARNING "You cannot use kronmult_gpu without CUDA.")
 endif ()
-
-# test
-add_executable(kronmult_test_gpu kronmult_test_gpu.cpp)
-target_include_directories(kronmult_test_gpu PUBLIC ${CUDA_INCLUDE_DIRS})
-target_link_libraries(kronmult_test_gpu PUBLIC kronmult_gpu)
-add_test(NAME kronmult_test_gpu COMMAND ./kronmult_test_gpu)
-
-# benchmark
-add_executable(kronmult_bench_gpu kronmult_bench_gpu.cpp)
-target_include_directories(kronmult_bench_gpu PUBLIC ${CUDA_INCLUDE_DIRS})
-target_link_libraries(kronmult_bench_gpu PUBLIC kronmult_gpu)
-add_test(NAME kronmult_bench_gpu COMMAND ./kronmult_bench_gpu)
