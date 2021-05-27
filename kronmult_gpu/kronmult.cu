@@ -69,7 +69,7 @@ multiply_transpose(T const X[], int const nb_col_X, T const M_transposed[], int 
         }
         // this sync is there to synchronise the threads for significantly improved performance in float
         // it does not impact correctness
-        if (std::is_same<float, T>::value) __syncthreads();
+        if constexpr(std::is_same<float, T>::value) __syncthreads();
         Y[colmajor(colX, rowM, nb_col_X)] = dotprod;
     }
 }
