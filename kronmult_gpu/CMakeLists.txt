@@ -8,4 +8,5 @@ add_library(kronmult_gpu
             kronmult.cuh)
 
 set_target_properties(kronmult_gpu PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
-target_include_directories(kronmult_gpu PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(kronmult_gpu PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CUDA_INCLUDE_DIRS})
+target_link_libraries(kronmult_gpu PUBLIC ${CUDA_LIBRARIES})
