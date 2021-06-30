@@ -23,11 +23,10 @@ long runBench(int const degree, int const dimension, int const grid_level, std::
     int const matrix_stride = 67; // large prime integer, modelize the fact that columns are not adjascent in memory
     // nb_elements = batch_count * size_input * (2 + matrix_count*matrix_size*matrix_size) +
     // nb_distinct_outputs*size_input;
-    long const max_element_number = 395000000000;
-    int const max_batch_count     = (max_element_number - nb_distinct_outputs * size_input) /
-                                (size_input * (2 + matrix_count * matrix_size * matrix_size));
-    int const batch_count =
-        std::min(max_batch_count, pow_int(2, grid_level) * pow_int(grid_level, dimension - 1));
+    long long const max_element_number = 395000000000;
+    long long const max_batch_count = (max_element_number - nb_distinct_outputs * size_input) / static_cast<long long>(size_input * (2 + matrix_count * matrix_size * matrix_size));
+    long long const formula_batch_count = pow_int(2, grid_level) * pow_int(grid_level, std::min(1,dimension - 1));
+    int const batch_count = std::min(max_batch_count, formula_batch_count);
     std::cout << benchName << " benchcase"
               << " batch_count:" << batch_count << " matrix_size:" << matrix_size
               << " matrix_count:" << matrix_count << " size_input:" << size_input
@@ -67,14 +66,14 @@ int main()
     // running the benchmarks
     std::vector<std::string> names;
     std::vector<long> times;
-    for(int level = 2; level <= 9; level++)
+    for(int degree = 2; degree <= 10; degree++)
     {
-        for(int degree = 2; degree <= 10; degree++)
+        for(int level = 2; level <= 9; level++)
         {
             for(int dimension = 1; dimension <= 6; dimension++)
             {
                 // run bench
-                std::string name = "level:" + std::to_string(level) + " degree:" + std::to_string(degree) + " level:" + std::to_string(level);
+                std::string name = "degree:" + std::to_string(degree) +  " level:" + std::to_string(level) + " dimension:" + std::to_string(dimension);
                 auto time = runBench(degree, dimension, level, name);
                 // strore result
                 names.push_back(name);
