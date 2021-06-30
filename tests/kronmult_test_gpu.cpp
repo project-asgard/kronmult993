@@ -1,8 +1,8 @@
-#include "utils/batch_size.h"
 #include "utils/kronmult_naive.h"
 #include "utils/utils_gpu.h"
 #include <iostream>
 #include <kronmult.cuh>
+#include "utils/batch_size.h"
 
 // change this to run the bench in another precision
 using Number = double;

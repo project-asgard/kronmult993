@@ -1,8 +1,8 @@
 #include "utils/utils_cpu.h"
-#include "utils/batch_size.h"
 #include <chrono>
 #include <iostream>
 #include <kronmult.hpp>
+#include "utils/batch_size.h"
 #include <omp.h>
 
 // change this to run the bench in another precision
@@ -16,8 +16,6 @@ long runBench(int const degree, int const dimension, int const grid_level, std::
               int const nb_distinct_outputs = 5)
 {
     // Kronmult parameters
-    // TODO find proper formula for batch count, current one can generates batches too large to be allocated
-    // without the min
     int const matrix_size  = degree;
     int const matrix_count = dimension;
     int const size_input   = pow_int(matrix_size, matrix_count);
@@ -69,8 +67,11 @@ int main()
             for(int level = 2; level <= 9; level++)
             {
                 // run bench
-                std::string name = "degree:" + std::to_string(degree) + " dimension:" + std::to_string(dimension) + " level:" + std::to_string(level);
-                auto time = runBench(degree, dimension, level, name);
+                int const nb_distinct_outputs = 5;
+                int const batch_count = compute_batch_size(degree, dimension, level, nb_distinct_outputs);
+                std::string name = "degree:" + std::to_string(degree) + " dimension:" + std::to_string(dimension)
+                                 + " level:" + std::to_string(level) + " batch-size:" + std::to_string(batch_count);
+                auto time = runBench(degree, dimension, level, name, nb_distinct_outputs);
                 // strore result
                 names.push_back(name);
                 times.push_back(time);

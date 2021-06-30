@@ -1,8 +1,8 @@
-#include "utils/batch_size.h"
 #include "utils/kronmult_naive.h"
 #include "utils/utils_cpu.h"
 #include <iostream>
 #include <kronmult.hpp>
+#include "utils/batch_size.h"
 #include <omp.h>
 
 // change this to run the bench in another precision
