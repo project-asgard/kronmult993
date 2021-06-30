@@ -1,3 +1,4 @@
+#include "utils/batch_size.h"
 #include "utils/kronmult_naive.h"
 #include "utils/utils_gpu.h"
 #include <iostream>
@@ -14,13 +15,11 @@ Number runTest(int const degree, int const dimension, int const grid_level, std:
                int const nb_distinct_outputs = 5)
 {
     // Kronmult parameters
-    // TODO find proper formula for batch count, current one can generates batches too large to be allocated
-    // without the min
-    int const batch_count = pow_int(2, grid_level) * pow_int(grid_level, dimension - 1);
     int const matrix_size  = degree;
     int const matrix_count = dimension;
     int const size_input   = pow_int(matrix_size, matrix_count);
     int const matrix_stride = 67; // large prime integer, modelize the fact that columns are not adjascent in memory
+    int const batch_count = compute_batch_size(degree, dimension, grid_level, nb_distinct_outputs);
     std::cout << benchName << " benchcase"
               << " batch_count:" << batch_count << " matrix_size:" << matrix_size
               << " matrix_count:" << matrix_count << " size_input:" << size_input
