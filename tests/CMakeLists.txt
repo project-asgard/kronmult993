@@ -36,6 +36,11 @@ add_executable(kronmult_bench kronmult_bench.cpp)
 target_link_libraries(kronmult_bench PUBLIC kronmult_omp ${BLAS_LIBRARIES})
 add_test(NAME kronmult_bench COMMAND ./kronmult_bench)
 
+# full benchmark
+add_executable(kronmult_fullbench kronmult_fullbench.cpp)
+target_link_libraries(kronmult_fullbench PUBLIC kronmult_omp ${BLAS_LIBRARIES})
+add_test(NAME kronmult_fullbench COMMAND ./kronmult_fullbench)
+
 #----------------------------------------------------------------------------------------
 # GPU
 
@@ -53,6 +58,11 @@ if (CUDA_FOUND)
     target_include_directories(kronmult_bench_gpu PUBLIC ${CUDA_INCLUDE_DIRS})
     target_link_libraries(kronmult_bench_gpu PUBLIC kronmult_gpu)
     add_test(NAME kronmult_bench_gpu COMMAND ./kronmult_bench_gpu)
+    # full benchmark
+    add_executable(kronmult_fullbench_gpu kronmult_fullbench_gpu.cpp)
+    target_include_directories(kronmult_fullbench_gpu PUBLIC ${CUDA_INCLUDE_DIRS})
+    target_link_libraries(kronmult_fullbench_gpu PUBLIC kronmult_gpu)
+    add_test(NAME kronmult_fullbench_gpu COMMAND ./kronmult_fullbench_gpu)
 else ()
     message(WARNING "You cannot use kronmult_gpu without CUDA.")
 endif ()
