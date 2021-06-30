@@ -5,6 +5,14 @@ large benchcase: batch_count:3903 matrix_size:8 matrix_count:6 size_input:262144
 
 -------------------- DOUBLE --------------------
 
+GPU cublasBatched (min of 3 runs)
+toy: 367ms
+small: 3ms
+medium: 4ms
+large: 5820ms
+realistic: 6924ms
+// large is down to 25ms with matrix product
+
 GPU inputsize (min of 3 runs)
 toy: 2ms
 small: 2ms

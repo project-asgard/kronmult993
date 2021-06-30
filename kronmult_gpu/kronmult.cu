@@ -19,9 +19,6 @@ __host__ int pow_int(int const number, int const power)
     return number * pow_int(number, power - 1);
 }
 
-/*
- * TODO write doc
- */
 template<typename T>
 cublasStatus_t multiply_transpose_batched(cublasHandle_t& handle,
                                           T* input_batched[], const int nb_col_input_batched,
