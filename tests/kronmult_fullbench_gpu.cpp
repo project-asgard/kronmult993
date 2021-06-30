@@ -74,12 +74,12 @@ int main()
     std::vector<long> times;
     for(int degree = 2; degree <= 10; degree++)
     {
-        for(int level = 2; level <= 9; level++)
+        for(int dimension = 1; dimension <= 6; dimension++)
         {
-            for(int dimension = 1; dimension <= 6; dimension++)
+            for(int level = 2; level <= 9; level++)
             {
                 // run bench
-                std::string name = "degree:" + std::to_string(degree) +  " level:" + std::to_string(level) + " dimension:" + std::to_string(dimension);
+                std::string name = "degree:" + std::to_string(degree) + " dimension:" + std::to_string(dimension) + " level:" + std::to_string(level);
                 auto time = runBench(degree, dimension, level, name);
                 // strore result
                 names.push_back(name);
