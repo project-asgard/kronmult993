@@ -20,13 +20,13 @@ __host__ int pow_int(int const number, int const power)
 }
 
 template<typename T>
-cublasStatus_t multiply_transpose_batched(cublasHandle_t& handle,
+__host__ cublasStatus_t multiply_transpose_batched(cublasHandle_t& handle,
                                           T* input_batched[], const int nb_col_input_batched,
                                           T* matrix_batched[], const int matrix_size_batched, const int matrix_stride_batched,
                                           T* output_batched[], int nb_batch);
 
 template<>
-cublasStatus_t multiply_transpose_batched<double>(cublasHandle_t& handle,
+__host__ cublasStatus_t multiply_transpose_batched<double>(cublasHandle_t& handle,
                                                   double* input_batched[], const int nb_col_input_batched,
                                                   double* matrix_batched[], const int matrix_size_batched, const int matrix_stride_batched,
                                                   double* output_batched[], int nb_batch)
@@ -46,7 +46,7 @@ cublasStatus_t multiply_transpose_batched<double>(cublasHandle_t& handle,
 }
 
 template<>
-cublasStatus_t multiply_transpose_batched<float>(cublasHandle_t& handle,
+__host__ cublasStatus_t multiply_transpose_batched<float>(cublasHandle_t& handle,
                                                  float* input_batched[], const int nb_col_input_batched,
                                                  float* matrix_batched[], const int matrix_size_batched, const int matrix_stride_batched,
                                                  float* output_batched[], int nb_batch)
