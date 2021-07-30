@@ -5,8 +5,8 @@
 /*
  * computes number^power for integers
  * does not care about performances
- * does not use std::pow as it does an implicit float conversion that could lead to rounding errors for large
- * numbers
+ * does not use std::pow as it does an implicit float conversion
+ * that could lead to rounding errors for large numbers
  */
 __host__ int pow_int(int const number, int const power)
 {
@@ -55,21 +55,24 @@ template<typename T>
 __device__ void
 multiply_transpose(T const X[], int const nb_col_X, T const M_transposed[], int const size_M, T Y[])
 {
-    // strided loop, each thread threadIdx.x manages the inputs i such that threadIdx.x % t==0
+    // strided loop, each thread threadIdx.x manages the inputs i such that i % threadIdx.x==0
     for (int i = threadIdx.x; i < nb_col_X * size_M; i += blockDim.x)
     {
         // extracts the column and row number for the current thread
         int const colX = i / size_M;
         int const rowM = i - colX * size_M;
+
         // computes the dot product to fill the [colX,rowM] cell of the matrix
         T dotprod = 0.;
         for (int k = 0; k < size_M; k++)
         {
             dotprod += X[colmajor(k, colX, size_M)] * M_transposed[colmajor(k, rowM, size_M)];
         }
+
         // this sync is there to synchronise the threads for significantly improved performance in float
         // it does not impact correctness
         if constexpr(std::is_same<float, T>::value) __syncthreads();
+
         Y[colmajor(colX, rowM, nb_col_X)] = dotprod;
     }
 }
@@ -111,7 +114,7 @@ __device__ void cuda_kronmult(int const matrix_count, int const matrix_size, T c
 
         // swap `input` and `workspace` such that `input` contains once again the input
         // note that, while they have the same size flattened, the shape (nb_columns and nb_rows) of `input`
-        // and `workspace` are different this is on purpose and equivalent to a reshape operation that is
+        // and `workspace` *are* different this is on purpose and equivalent to a reshape operation that is
         // actually needed by the algorithm
         T *temp   = input;
         input     = workspace;
@@ -158,7 +161,7 @@ __global__ void cuda_kronmult_batchelement(int const matrix_count, int const mat
                      input, size_input, output,
                      workspace, transpose_workspace);
 
-    // frees the tranpose workspace memory
+    // frees the transpose workspace memory
     __syncthreads();
     if (threadIdx.x == 0) delete[] transpose_workspace;
 }
