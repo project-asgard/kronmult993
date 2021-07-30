@@ -124,9 +124,13 @@ __host__ cudaError cuda_kronmult_batched(const int matrix_count, const int matri
                                  cudaMemcpyDeviceToDevice);
         if(errorCode != cudaSuccess) return errorCode;
 
+        // does matrix multiplications
         multiply_transpose_batched<T>(handle, input_batched, nb_col_input,
                                       matrix_batched, matrix_size, matrix_stride,
                                       workspace_batched, nb_batch);
+        // waits for kernel to succeed
+        errorCode = cudaDeviceSynchronize();
+        if(errorCode != cudaSuccess) return errorCode;
 
         std::swap(input_batched, workspace_batched);
     }
