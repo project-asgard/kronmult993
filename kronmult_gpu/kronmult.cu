@@ -100,7 +100,7 @@ __host__ cudaError cuda_kronmult_batched(const int matrix_count, const int matri
     if (stat != CUBLAS_STATUS_SUCCESS) return cudaErrorUnknown;
 
     // sets the math mode to allow cuBLAS to use Tensor Cores
-    stat = cublasSetMathMode(handle, CUBLAS_TENSOR_OP_MATH);
+    stat = cublasSetMathMode(handle, CUBLAS_TF32_TENSOR_OP_MATH);
     if (stat != CUBLAS_STATUS_SUCCESS) return cudaErrorUnknown;
 
     // used to store batch elements

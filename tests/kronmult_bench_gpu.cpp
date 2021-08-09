@@ -5,7 +5,7 @@
 #include "utils/batch_size.h"
 
 // change this to run the bench in another precision
-using Number = double;
+using Number = float;
 
 /*
  * runs a benchmark with the given parameters
